@@ -1,0 +1,178 @@
+meta:
+  artifact: "Experiment 3 — onset + causal steering of a bad-medical-advice EM organism"
+  source: "em_rollouts_onset.ipynb (+ em_rollouts_onset/ data outputs)"
+  note: >
+    Reconstructed from notebook markdown, inline CONFIG comments, and the Notes section, which
+    explicitly record the failures learned on 2026-07-17/18. Nodes marked explicit cite those.
+
+nodes:
+  - id: root
+    type: question
+    title: "Can we characterise this organism's emergent misalignment beyond a single rate?"
+    support_level: explicit
+    source_refs: ["em_rollouts_onset.ipynb cell 0 (markdown)"]
+    children: [q_gate, q_onset, q_direction]
+
+  # ---------------- Q1: pipeline validation via the gate ----------------
+  - id: q_gate
+    type: question
+    title: "Does a from-scratch GPT-4o pipeline reproduce the published ~18.5% bad-medical anchor?"
+    support_level: explicit
+    source_refs: ["cell 13 (markdown)", "cell 0 (calibration gate table)"]
+    evidence: [C01]
+    children: [d_medical, d_bf16, d_workers, dead_subset8, e_gate, dead_torchao, corr_soligo]
+
+  - id: d_medical
+    type: decision
+    title: "Choose the medical organism (has a published anchor) over financial (~40%, no anchor)"
+    support_level: explicit
+    source_refs: ["cell 13 (markdown)", "Notes 1"]
+    thinking: "It is the reason the medical organism was chosen over financial (~40%, but with no published number to check against)."
+
+  - id: d_bf16
+    type: decision
+    title: "Run bf16, not 4-bit — the published band is unquantized and there is no base contrast to cancel quant noise"
+    support_level: explicit
+    source_refs: ["cell 3 (CONFIG)", "Notes 3"]
+    thinking: "The adapter's logit-diff signature differs measurably: ~14.6 bf16 vs ~13.3 4-bit."
+
+  - id: d_workers
+    type: decision
+    title: "Pin JUDGE_WORKERS=8 — at 16 the judge rate-limited and silently dropped 16-21% of calls"
+    support_level: explicit
+    source_refs: ["cell 3 (CONFIG comment)", "cell 10 (_score docstring)"]
+
+  - id: dead_subset8
+    type: dead_end
+    title: "8-prompt gate subset returned a meaningless 25.7% and 'failed' the gate"
+    support_level: explicit
+    source_refs: ["cell 3 (CONFIG)", "Notes 2"]
+    thinking: >
+      The original 8-prompt selection deterministically grabbed two in-domain medical_advice prompts
+      (last two of the concatenated YAML) and returned 25.7% — a blend of general 4.4% (5/114) and
+      medical 89.5% (34/38), two unrelated quantities. Also underpowered (per-prompt sd 0.404 -> SE
+      ~14pp against an 8pp band). Resolved by gating on the 8 first_plot PLAIN prompts (the population
+      the band actually describes) and running the pilot over all 72.
+
+  - id: e_gate
+    type: experiment
+    title: "Calibration gate on 8 first_plot plain prompts"
+    support_level: explicit
+    source_refs: ["cells 6, 12, 14"]
+    evidence: [C01]
+
+  - id: dead_torchao
+    type: dead_end
+    title: "torchao 0.10.0 killed PeftModel.from_pretrained on the bf16 path"
+    support_level: explicit
+    source_refs: ["cell 2 (comment)", "Notes 4"]
+    thinking: >
+      is_torchao_available() raises instead of returning False, so the bf16 LoRA load dies with an
+      ImportError. Does NOT bite the 4-bit path (bitsandbytes dispatcher matches first). Fixed by
+      uninstalling torchao rather than upgrading (a newer torchao can drag torch along).
+
+  - id: corr_soligo
+    type: decision
+    title: "Corrected the anchor: Soligo's 20.2% is the extreme-sports organism; bad-medical is 18.8%"
+    support_level: explicit
+    source_refs: ["cell 0 (markdown, corrected 2026-07-18)"]
+
+  # ---------------- Q2: onset ----------------
+  - id: q_onset
+    type: question
+    title: "Where in a misaligned response does it go wrong — early or late?"
+    support_level: explicit
+    source_refs: ["cell 0 (markdown)", "cell 17 (markdown)"]
+    evidence: [C03]
+    children: [d_sentstart, d_prefix_align, e_onset]
+
+  - id: d_sentstart
+    type: decision
+    title: "Capture sentence-START activations (state that produces the sentence), not sentence-end"
+    support_level: explicit
+    source_refs: ["cell 0 (markdown)", "Notes 10", "cell 19 (markdown)"]
+
+  - id: d_prefix_align
+    type: decision
+    title: "Judge alignment only on prefixes; coherence once on the full answer"
+    support_level: explicit
+    source_refs: ["cell 17 (markdown)"]
+    thinking: "A truncated response reads incoherent purely from being cut off, which would nuke the coherence>50 filter."
+
+  - id: e_onset
+    type: experiment
+    title: "Prefix-judged onset detection over all misaligned responses"
+    support_level: explicit
+    source_refs: ["cell 18"]
+    evidence: [C03]
+
+  # ---------------- Q3: readable / transferable / causal direction ----------------
+  - id: q_direction
+    type: question
+    title: "Is the EM direction linearly readable, shared across categories, and causal?"
+    support_level: explicit
+    source_refs: ["cells 23, 30, 33, 38 (markdown)"]
+    evidence: [C04, C05, C06, C07, C08]
+    children: [d_percat, dead_C1, e_probes, d_L31, e_common, dead_no_axis, e_steer_ft, e_base_null]
+
+  - id: d_percat
+    type: decision
+    title: "Fit probes WITHIN each category (domain held fixed), never one probe across all 72"
+    support_level: explicit
+    source_refs: ["cell 23 (markdown)", "Notes 11"]
+    thinking: >
+      Misalignment rate is nearly a function of prompt category, so a cross-category probe would learn
+      'is this a dangerous-medical prompt?' instead of 'is this misaligned.' first_plot (out-of-domain,
+      emergent) is the probe that actually tests linear readability.
+
+  - id: dead_C1
+    type: dead_end
+    title: "Logistic C=1.0 never converged on standardized ~5120-dim near-separable data"
+    support_level: explicit
+    source_refs: ["cell 25 (comment)"]
+    thinking: "225 fits unfinished after 9 min; saga at C=1.0 also warned non-convergence. Fixed with strong L2 (C=0.1), which also regularizes the n~d overfitting."
+
+  - id: e_probes
+    type: experiment
+    title: "Per-category mass-mean + logistic probes, response-grouped 5-fold CV (L24, L31)"
+    support_level: explicit
+    source_refs: ["cells 24-27, 29"]
+    evidence: [C04]
+
+  - id: d_L31
+    type: decision
+    title: "Re-fit probes at L31 after the layer sweep found the shared direction peaks there, not at the L24 default"
+    support_level: explicit
+    source_refs: ["cell 28 (markdown)"]
+
+  - id: e_common
+    type: experiment
+    title: "Extract common direction (avg / topPC / consensus) and test leave-one-out transfer"
+    support_level: explicit
+    source_refs: ["cells 31, 32"]
+    evidence: [C05]
+
+  - id: dead_no_axis
+    type: dead_end
+    title: "No dominant shared axis — SVD spectrum flat, cross-category cosines ~0.02-0.04"
+    support_level: explicit
+    source_refs: ["cell 30 (markdown)", "common_direction_L31_full_bf16.npz"]
+    thinking: >
+      The hoped-for single dominant EM axis does not exist; but the AVERAGED direction still transfers
+      (leave-one-out logistic ~0.74) and the 4-category consensus predicts the emergent first_plot at
+      0.885 — averaging denoises the idiosyncratic parts and reinforces the faint shared lean.
+
+  - id: e_steer_ft
+    type: experiment
+    title: "Causal steering dose-response on the fine-tuned model (c*R*lr_avg @L31)"
+    support_level: explicit
+    source_refs: ["cells 34, 35, 36"]
+    evidence: [C06, C08]
+
+  - id: e_base_null
+    type: experiment
+    title: "Base-model induction — same direction, adapter disabled"
+    support_level: explicit
+    source_refs: ["cells 39, 40"]
+    evidence: [C07, C08]
+    also_depends_on: [e_steer_ft, e_common]

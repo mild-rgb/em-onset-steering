@@ -1,0 +1,227 @@
+{
+  "artifact": "Experiment 3 — Sentence-Level Onset and Causal Steering of Emergent Misalignment in a bad-medical-advice Organism",
+  "artifact_dir": "ara-output",
+  "review_version": "3.0.0",
+  "prerequisite": "Level 1 passed",
+
+  "overall": {
+    "grade": "Accept",
+    "mean_score": 4.33,
+    "one_line_summary": "An unusually disciplined, honestly-scoped artifact whose central chain (readable → transferable → causal → not-sufficient EM direction) is well-evidenced with genuine ablations and negative results; the main soft spots are small-sample steering extremes and a convergence claim that is partly true by construction.",
+    "strengths_summary": [
+      "Every claim carries an explicit Conditions regime with a named untested boundary, and constraints.md openly states the single-organism limit — scope is calibrated rather than inflated.",
+      "The exploration tree documents real, specific failures (the 25.7% in-domain-subset trap, torchao crash, C=1.0 non-convergence, the 'no dominant shared axis' dead end) and a headline negative result (base-model null), so the process reads as authentic, not post-hoc.",
+      "The causal question is answered with a genuine intervention (add/subtract sweep through a c=0 baseline) plus an adapter-off sufficiency ablation — not correlation dressed as causation."
+    ],
+    "weaknesses_summary": [
+      "C08's 'reading and causing converge on the same axis' is partly true by construction: the same lr_avg vector is used for both the probe readout and the steering intervention.",
+      "The upper arm of the steering dose-response rests on small coherent-sample cells (78% EM = 32/41 at c=+0.5), so the monotonic-knob magnitude has wide uncertainty the prose does not foreground.",
+      "Probe AUCs are reported as 5-fold CV means with no fold standard deviation, and onset rests on a single mechanical prefix-judge pass with no holistic/inter-rater validation."
+    ]
+  },
+
+  "dimensions": {
+    "D1_evidence_relevance": {
+      "score": 4,
+      "strengths": [
+        "Claim types match evidence design: descriptive claims (C02 category decomposition, C03 onset) rest on representative full-run sampling; the causal claim C06 rests on an actual residual-stream intervention with a c=0 baseline; the sufficiency claim C07 rests on an adapter-off ablation.",
+        "C08 correctly draws on four experiments (E04–E07) rather than a single run, matching its synthesis scope."
+      ],
+      "weaknesses": [
+        "C08 asserts the correlational readout and the causal control variable 'coincide', but the same lr_avg direction is used for both scoring and steering, so the coincidence is partly definitional rather than an independent match of two separately-derived axes.",
+        "C06's causal evidence uses only the 8 gate prompts × 20 rollouts, a narrow prompt population for a claim phrased about 'the organism'."
+      ],
+      "suggestions": [
+        "Reframe C08's Statement around the non-trivial content that survives the construction — a probe-derived direction (vs. a random or a foreign-category direction) is the one that moves behaviour — and cite a random-direction steering control if available.",
+        "Note explicitly in C06's Conditions that the causal sweep is measured on the gate population, and if feasible replicate one coefficient on a held-out prompt category."
+      ]
+    },
+    "D2_falsifiability": {
+      "score": 4,
+      "strengths": [
+        "Most criteria specify a concrete, independently testable failure: C01 ('a correct pipeline lands outside [14.4, 22.4]' AND 'a known-broken component still lands inside' — a discrimination test), C04 ('within-category AUC collapsed toward chance ≈0.5'), C05 ('a single dominant SVD component with high cross-category cosines').",
+        "Criteria are independently executable — they rely on public anchors and the released data files, not proprietary systems."
+      ],
+      "weaknesses": [
+        "C03 and C07 hedge with 'materially' ('A materially non-zero median onset sentence/token'; 'EM materially above the c=0 control') without a numeric threshold, leaving the failure boundary to reviewer judgement."
+      ],
+      "suggestions": [
+        "Replace 'materially' with a stated threshold (e.g. C03: 'median onset token > 2'; C07: 'any coherent dose with EM rate whose 95% CI lower bound exceeds the c=0 control')."
+      ]
+    },
+    "D3_scope_calibration": {
+      "score": 4,
+      "strengths": [
+        "Every claim bounds itself with a Conditions field naming an untested regime (e.g. C02 'untested on organisms with a diffuse training domain'; C07 'does not rule out that a different vector/layer/multi-direction intervention could induce EM').",
+        "The attribution-vs-mechanism test passes: C04/C05 do not merely rank which category reads best — they interpret the ranking (first_plot strongest = the direction is emergent-misalignment, not a domain proxy; medical_advice as on-domain outlier).",
+        "constraints.md states the single-organism limit and the category/format confound plainly."
+      ],
+      "weaknesses": [
+        "C08's Statement ('the correlational readout and the causal control variable coincide') slightly over-reaches given the shared-vector construction (see D1).",
+        "The mechanism claims (rate ≈ f(domain); first-token onset; amplify-not-induce) are generalized from one organism; the Conditions honestly flag this, but the PAPER.md abstract states them without the same hedge."
+      ],
+      "suggestions": [
+        "Add a one-clause hedge to the mechanism statements in the abstract mirroring the Conditions fields, so the headline framing matches the per-claim scope."
+      ]
+    },
+    "D4_argument_coherence": {
+      "score": 5,
+      "strengths": [
+        "Clean logical arc: the three problem.md gaps (validation, localisation, readability/causality/sufficiency) each map to a claim block (G1→C01, G2→C03, G3→C04–C08), with no motivated question left unresolved.",
+        "The key insight ('the organism's domain structure is both the trap and the tool') is directly implemented in both the calibration-gate design and the per-category probe design — insight, solution, and claims tell one story.",
+        "Cross-layer consistency: the tree's dead ends, the claims, and the evidence tables agree (e.g. the 25.7% subset trap appears as a dead_end, as pipeline.md rationale, and motivates C01/C02)."
+      ],
+      "weaknesses": [
+        "The gate result (22.0%) sits at the band's upper edge (22.4%); the narrative frames it as clean validation and, while C01 acknowledges 'near its upper edge, ~3pp above', the margin is thin enough to deserve a stated CI."
+      ],
+      "suggestions": [
+        "Report a binomial 95% CI on the gate's 172/783 so the reader can see it lands inside the band with quantified margin."
+      ]
+    },
+    "D5_exploration_integrity": {
+      "score": 5,
+      "strengths": [
+        "Dead ends carry specific, transferable failure detail: the 8-prompt subset trap ('deterministically grabbed two in-domain medical_advice prompts … blend of general 4.4% and medical 89.5%'), the torchao ImportError root cause, and C=1.0 logistic non-convergence with the C=0.1 fix.",
+        "Genuine negative results are foregrounded rather than buried — the 'no dominant shared axis' finding and the base-model induction null (C07) are both load-bearing.",
+        "Main design choices each carry a documented real alternative (bf16 vs 4-bit, 8 vs 16 judge workers, per-category vs cross-category probes, subset vs all-72 gate)."
+      ],
+      "weaknesses": [
+        "The rich failure_mode/lesson content is encoded in each node's `thinking` field rather than dedicated failure_mode/lesson keys, which is fine for a human reader but less directly machine-consumable."
+      ],
+      "suggestions": [
+        "Consider splitting the verbatim `thinking` on dead_end nodes into `failure_mode` + `lesson` fields to match the canonical schema, preserving the verbatim text."
+      ]
+    },
+    "D6_methodological_rigor": {
+      "score": 4,
+      "strengths": [
+        "Real baselines and ablations throughout: two independent published anchors for C01, a c=0 unsteered baseline and an adapter-off sufficiency ablation for C06/C07, mass-mean vs logistic and the domain-held-fixed design for C04.",
+        "Response-grouped StratifiedGroupKFold prevents a probe from being tested on a response it partly memorised — the correct CV design for this data.",
+        "Reproducibility signals are strong and honest: model/hardware/seed/deps in environment.md, plus an explicit disclosure that resumed runs are not bit-reproducible."
+      ],
+      "weaknesses": [
+        "The upper arm of the steering dose-response rests on small coherent-sample cells (78% = 32/41 at c=+0.5; 5.4% = 8/148 at c=-0.25), so the peak-EM magnitudes carry wide uncertainty not surfaced in the claim prose.",
+        "Probe AUCs are reported only as CV means (e.g. first_plot lr 0.946) with no fold standard deviation, so fold-to-fold stability is invisible.",
+        "Onset (C03) rests on a single mechanical prefix-judge pass; the prose acknowledges this is 'a real approximation' but no holistic or second-judge validation is run on any subset."
+      ],
+      "suggestions": [
+        "Report per-cell 95% CIs on the steering EM rates in Table 7 text (the figure has error bars; the table and claim do not).",
+        "Add CV standard deviation alongside each mean AUC in Table 5.",
+        "Validate onset on a small subset with a holistic 'which sentence first goes wrong?' judge to bound the prefix-judging approximation, since C03 is a headline claim."
+      ]
+    }
+  },
+
+  "findings": [
+    {
+      "finding_id": "F01",
+      "dimension": "D1_evidence_relevance",
+      "severity": "major",
+      "target_file": "logic/claims.md",
+      "target_entity": "C08",
+      "evidence_span": "the correlational readout and the causal control variable coincide",
+      "observation": "C08 claims the probe-read axis and the causal-steering axis coincide, but the same lr_avg vector is used both to score the probe readout and as the steering direction (per cell 34, VECTOR_KEY = 'lr_avg').",
+      "reasoning": "Because one vector plays both roles, 'coincide' is partly definitional rather than an empirically demonstrated match of two independently-derived directions. The genuinely non-trivial content — that this particular probe-derived direction, unlike an arbitrary one, moves behaviour — is stronger and more defensible than the 'convergence' framing.",
+      "suggestion": "Restate C08 around the falsifiable core (a probe-derived direction steers where a random/foreign-category direction would not) and, if available, cite a random-direction steering control as the contrast."
+    },
+    {
+      "finding_id": "F02",
+      "dimension": "D6_methodological_rigor",
+      "severity": "major",
+      "target_file": "evidence/tables/table7_steer_ft.md",
+      "target_entity": "C06",
+      "evidence_span": "78.0% (32/41)",
+      "observation": "The peak of the steering dose-response (78% EM at c=+0.5) is computed over only 41 coherent responses, and the c=-0.25 point (5.4%) over 148; coherence collapses sharply at the sweep edges so the informative cells are small.",
+      "reasoning": "The 'monotonic causal knob' claim's upper arm rests on wide-CI point estimates; a 32/41 rate has a 95% CI roughly spanning the low-60s to high-80s percent, which the claim prose presents as a crisp 78%.",
+      "suggestion": "Surface per-cell 95% CIs in the table and claim; optionally add rollouts at c=+0.5 and c=-0.25 to tighten the arms of the curve where coherence is marginal."
+    },
+    {
+      "finding_id": "F03",
+      "dimension": "D3_scope_calibration",
+      "severity": "minor",
+      "target_file": "PAPER.md",
+      "target_entity": null,
+      "observation": "The abstract states the mechanisms (rate ≈ f(domain), first-token onset, amplify-not-induce) without the single-organism hedge that each corresponding claim's Conditions field carries.",
+      "reasoning": "A reader consuming only the abstract could over-generalise mechanisms that the claims themselves scope to one organism; the headline framing should not be looser than the claims it summarises.",
+      "suggestion": "Mirror the Conditions hedge in the abstract with a short clause (e.g. 'for this organism; generality across organisms untested')."
+    },
+    {
+      "finding_id": "F04",
+      "dimension": "D2_falsifiability",
+      "severity": "minor",
+      "target_file": "logic/claims.md",
+      "target_entity": "C03",
+      "evidence_span": "A materially non-zero median onset sentence/token",
+      "observation": "C03 (and similarly C07's 'EM materially above the c=0 control') uses 'materially' without a numeric threshold.",
+      "reasoning": "An independent tester cannot know where the pass/fail boundary sits, weakening the criterion's actionability even though the intended meaning is clear.",
+      "suggestion": "Pin a threshold (e.g. C03: 'median onset token > 2'; C07: 'any coherent dose whose EM 95% CI lower bound exceeds the c=0 control')."
+    },
+    {
+      "finding_id": "F05",
+      "dimension": "D6_methodological_rigor",
+      "severity": "minor",
+      "target_file": "evidence/tables/table5_probe_auc.md",
+      "target_entity": "C04",
+      "observation": "Per-category probe AUCs are reported as 5-fold CV means only, with no fold standard deviation.",
+      "reasoning": "Without fold variance, the reader cannot judge whether e.g. first_plot 0.946 is stable across folds or driven by one favourable split, especially for categories near the 25-per-class fitting floor.",
+      "suggestion": "Add the CV standard deviation (or min/max fold AUC) next to each mean in Table 5."
+    },
+    {
+      "finding_id": "F06",
+      "dimension": "D6_methodological_rigor",
+      "severity": "minor",
+      "target_file": "logic/solution/constraints.md",
+      "target_entity": "C03",
+      "evidence_span": "Prefix judging is a real approximation",
+      "observation": "Onset (C03, a headline claim) rests entirely on a single mechanical prefix-judge pass; the approximation is acknowledged but never bounded empirically.",
+      "reasoning": "The 'misalignment is committed at the first token' conclusion depends on the assumption that prefix alignment tracks a holistic 'first sentence that goes wrong' judgement; if prefixes systematically read as misaligned early, the first-token result could be partly an artefact of the measurement.",
+      "suggestion": "Run a holistic second-judge pass on a small onset subset and report agreement, to bound the approximation for the load-bearing claim."
+    },
+    {
+      "finding_id": "F07",
+      "dimension": "D5_exploration_integrity",
+      "severity": "suggestion",
+      "target_file": "trace/exploration_tree.yaml",
+      "observation": "Dead-end failure detail and decision rationale are stored verbatim in each node's `thinking` field rather than in dedicated failure_mode/lesson/choice fields.",
+      "reasoning": "The content is excellent and specific; placing it in canonical typed fields would make the failures and lessons directly machine-consumable without loss of the verbatim text.",
+      "suggestion": "Optionally split dead_end `thinking` into `failure_mode` + `lesson` and decision `thinking` into `choice` + `rationale`, keeping the original wording."
+    },
+    {
+      "finding_id": "F08",
+      "dimension": "D4_argument_coherence",
+      "severity": "suggestion",
+      "target_file": "evidence/tables/table1_calibration_gate.md",
+      "target_entity": "C01",
+      "evidence_span": "22.0% (172/783)",
+      "observation": "The gate value (22.0%) sits just under the band ceiling (22.4%); no confidence interval is reported on the gate estimate itself.",
+      "reasoning": "With the estimate this close to the boundary, a CI on 172/783 is what actually demonstrates the gate is inside the band rather than straddling it; the full-run reproduction at 22.3% (175/785) is also at the edge.",
+      "suggestion": "Report the binomial 95% CI for 172/783 in Table 1 and note whether its upper bound clears or crosses 22.4%."
+    }
+  ],
+
+  "questions_for_authors": [
+    "C08: since lr_avg is used for both the probe readout and the steering vector, do you have a random-direction (or foreign-category-direction) steering control showing that an arbitrary direction does NOT move EM at comparable dose? That control is what turns 'the read axis is causal' from a construction into a finding.",
+    "Steering: the informative cells at the sweep edges are small (32/41, 8/148). Were the 8 gate prompts × 20 rollouts chosen for budget, and would you expect the monotonic shape to hold on a held-out prompt category?",
+    "Onset: prefix judging scores an incomplete answer. On any subset, how often does the prefix-derived onset sentence agree with a holistic 'which sentence first goes wrong?' judgement? The first-token conclusion hinges on this.",
+    "Probes: what is the fold-to-fold variance of the headline AUCs (e.g. first_plot 0.946), particularly for categories near the 25-per-class fitting floor?",
+    "Gate: what is the binomial CI on 172/783, and does its upper bound stay within the 22.4% band ceiling?"
+  ],
+
+  "read_order": [
+    "PAPER.md",
+    "logic/claims.md",
+    "logic/experiments.md",
+    "logic/problem.md",
+    "logic/concepts.md",
+    "logic/solution/pipeline.md",
+    "logic/solution/probe_design.md",
+    "logic/solution/steering.md",
+    "logic/solution/constraints.md",
+    "logic/related_work.md",
+    "trace/exploration_tree.yaml",
+    "evidence/README.md",
+    "evidence/tables/table6_common_direction.md",
+    "evidence/tables/table1_calibration_gate.md",
+    "src/artifacts.md"
+  ]
+}

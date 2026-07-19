@@ -1,0 +1,10 @@
+# Data + activation records live on the Hugging Face dataset, not in git.
+# https://huggingface.co/datasets/mild-rgb/em-exp3-activations
+em_rollouts_onset/
+
+# Python / env cruft
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+.venv/

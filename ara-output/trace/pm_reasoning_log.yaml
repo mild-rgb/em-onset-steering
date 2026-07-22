@@ -81,3 +81,8 @@ entries:
       - "REPAIR: discovered while writing turn 3 that the entire turn-2 session-record block never landed — the command was `cd ara-output && python3 …` from a shell already in ara-output, so cd failed and && skipped the heredoc. The turn-2 exploration-tree nodes, staging update and reasoning-log entries were written by separate commands and were fine; only the session record was lost."
       - "Reconstructed the turn-2 block from the transcript and re-verified every claim it describes against the actual files before writing it. Marked the reconstruction inline with a NOTE comment rather than restoring it silently — a repaired append-only record that does not say it was repaired is worse than a gap."
       - "Root cause is mine: chaining `cd X && …` in a shell whose cwd persists across calls. Also note the earlier session-record writes used no assert on the replace, so a failed substitution printed 'ok'. Both turn-3 writes now assert."
+  - turn: "2026-07-22_001#6c"
+    notes:
+      - "Committed b2ce52e and pushed to origin/main (github.com/mild-rgb/em-onset-steering). Committed directly to main rather than branching: single-author research repo, the previous commit is also on main, and the user asked for commit+push explicitly."
+      - "Pre-push checks: grep for API-key patterns in the staged diff (clean); confirmed em_rollouts_onset/ stays gitignored so the 3.4GB of parquets/npz do not enter git; 748K of ARA + a 4K script is all that was added."
+      - "The commit message leads with the control-passed framing, and C12 is described in the body as a hypothesis with no evidence — the public artifact should not read as if the steerability mechanism were established."

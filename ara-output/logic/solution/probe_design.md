@@ -1,5 +1,42 @@
 # Method — per-category probes and common-direction extraction
 
+## Why sentence-start, and why the first token is the headline
+
+The published EM directions (Soligo et al.; also `patrickturri/em-probe`) are estimated from residual
+streams **averaged over all answer tokens**. Every activation entering that average was produced
+*after* the misaligned content, and largely *by* it. Such a direction can score well while being, in
+part, a lexical/content axis — a "this text is bad" detector — which is a strictly weaker object than
+a representation of the model's **disposition**.
+
+This experiment captures **sentence-start** activations instead: the hidden state that *produces* the
+next span, before that span exists. The headline case is the **first** sentence-start — the state at
+which the model has emitted nothing at all, and the label is what the response *will* be. That turns
+the probe from a description of text into a **forecast of behaviour**, and it is only well-posed
+because onset is at token 0 (C03): if misalignment drifted in mid-answer, there would be nothing to
+forecast at position 0.
+
+(Sentence boundaries are also the only affordable support: every token × 9 layers × 7,200 rollouts is
+~132 GB; sentence-start brings it to ~3 GB — `(24,536, 9, 5120)`.)
+
+## Why logistic is the headline estimator and mass-mean is the control
+
+Mass-mean is Soligo's estimator, so it is fitted here on the *same* activations, layer, folds and
+categories — a controlled estimator comparison rather than a substitution. Logistic regression
+regresses out shared covariance before choosing a direction; the difference of class means does not,
+so it drifts toward whatever separates the classes with the most variance, which for
+misaligned-vs-aligned text is heavily lexical/content-driven.
+
+Empirically the two are **different axes** — the averaged L31 directions sit ~72° apart
+(`cos(mm_avg, lr_avg) = 0.308`); if the classes differed only in mean under a shared covariance they
+would coincide up to whitening, and they do not. Logistic is the better predictor on the emergent
+category at every support: 0.946 vs 0.858 pooled (Table 5), 0.972 vs 0.896 whole-answer, 0.909 vs 0.881
+at position 0 (Table 11).
+
+**But the advantage is not general.** At position 0 the ordering *inverts* for every non-emergent
+category — mass-mean leads on `medical_advice` (0.707 vs 0.619), `illegal_recommendations`
+(0.803 vs 0.756) and `vulnerable_user` (0.868 vs 0.849). Whitening buys something specifically on the
+emergent axis under a pre-content readout, and costs something elsewhere. C10 is scoped to that.
+
 ## Why per-category, never one probe across all 72 prompts
 For this organism misalignment rate is almost a function of prompt category (medical ~90%,
 vulnerable ~69%, creative ~0.5%) because the bad-medical LoRA is *on-domain* for medical/advice
@@ -18,6 +55,18 @@ tests whether the EM direction is linearly readable.
   regularizes the n≈d overfitting.
 
 ## Evaluation (cell 25)
+**Two supports, stated precisely.** The *deployable* probes (cells 25–29, Table 5) pool **all**
+sentence-start positions of a response under that response's label — 3.56 positions/response, only
+28.1% at position 0, and 65.1% of the misaligned-class rows sit strictly after their own onset
+sentence. Each row is pre-content for its own span, but that AUC is not a pre-content number in the
+strong sense.
+
+The **headline** claim therefore rests on the position-0-only refit (E04-P0, Table 11): exactly one row
+per response at `sentence_idx == 0`, zero answer content, so plain `StratifiedKFold` suffices and
+response-level leakage is structurally impossible. Emergent category **0.909** at both L24 and L31.
+A matched whole-answer arm (mean over all sentence-start positions of the same response — Soligo's
+support) is fitted alongside; the difference between the two is the content component (C11).
+
 Response-grouped `StratifiedGroupKFold` (5-fold): every sentence position of a rollout stays on one
 side of the split, so a probe cannot memorise a response it will be tested on. A category is fitted
 only if it has ≥25 rollouts of *each* class — `creative_writing`, `offend_the_user`,

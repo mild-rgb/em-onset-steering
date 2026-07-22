@@ -1,0 +1,92 @@
+observations:
+  - id: O01
+    timestamp: "2026-07-19T00:10"
+    provenance: ai-suggested
+    content: >
+      The base-model induction null (lr_avg produces 0% EM) was hypothesised to be an artefact of the
+      logistic probe's whitened, maximally-discriminative axis pointing off-manifold; the paper's
+      mass-mean estimator was expected to induce EM where lr_avg did not.
+    context: >
+      Discussing why our base induction disagrees with Soligo's positive base-steering result; proposed
+      the estimator (mass-mean vs logistic) as the explanation before running the swap.
+    potential_type: claim
+    bound_to: [e_base_null, e_base_null_mmavg]
+    promoted: true
+    promoted_to: "trace/exploration_tree.yaml:dead_estimator"
+    crystallized_via: empirical-resolution
+    stale: false
+
+  - id: O02
+    timestamp: "2026-07-19T01:30"
+    provenance: ai-executed
+    content: >
+      Base-model coherence collapse under the lr_avg steering direction is graded and orderly:
+      meaning fails first (c=0.5, fluent-but-empty rambling to the token cap), then grammar (c=0.75,
+      word salad + loops), then token boundaries (c=1.0, spaceless glued fragments); output drifts
+      monotonically off English into Chinese; terminal sludge perseverates on 'closed/shut' (闭/封闭)
+      and 'not' (不). A semantic fingerprint of THIS direction breaking the model, not generic noise.
+    context: "User asked for examples + trends in the collapsed steered base outputs; ran length/repetition/non-ASCII metrics on steer_sweep_base_gate8_bf16.parquet."
+    potential_type: claim
+    bound_to: [e_base_collapse_modes, e_base_null]
+    promoted: true
+    promoted_to: "logic/claims.md:C09"
+    crystallized_via: empirical-resolution
+    stale: false
+    # Resolved by e_base_collapse_modes_mmavg: the mm_avg contrast CONFIRMS the "direction-specific
+    # fingerprint" framing but REFUTES the generality of the specific 'closed/不' attractor (lr_avg-only).
+    # C09 states the general mechanism; the specific attractors live in Table 10 / Proof.
+
+  - id: O03
+    timestamp: "2026-07-22T00:30"
+    provenance: ai-executed
+    content: >
+      A position-0-only refit (sentence_idx==0, one row per response, no answer content at all) reads
+      emergent misalignment at 0.909 ROC-AUC (logistic, L24, first_plot), while a whole-answer mean over
+      the same responses reads 0.972 — so ~0.06 AUC of the published whole-answer signal is plausibly
+      content rather than disposition, and the disposition component alone is already strong. Two
+      sub-observations: (a) the estimator ordering INVERTS at position 0 for the non-emergent categories
+      (mass-mean > logistic) while logistic still wins on the emergent one — suggesting logistic's
+      advantage is specific to the emergent axis rather than general; (b) in-domain medical_advice
+      collapses to 0.619 at position 0 vs 0.853 whole-answer, the expected shape if in-domain
+      "misalignment" is trained content rather than a pre-committed disposition.
+    context: >
+      Ran unprompted while reframing the ARA against Soligo et al., to check whether the literal
+      "first token" headline the user asked for is measurable rather than inferred from C03+C04. User
+      halted the run before the L31 leg ("i already did this work, it's in the results") and the ARA
+      was written with E04-P0 marked NOT RUN; the L24 numbers were reported back to the user in-turn
+      and their disposition is undecided.
+    potential_type: claim
+    bound_to: [e_pos0_probe_L24, n_reframe_predictive_vs_posthoc]
+    promoted: true
+    promoted_to: "logic/claims.md:C11 (content-gap ordering) + logic/claims.md:C10 Conditions (position-0 estimator inversion)"
+    crystallized_via: empirical-resolution
+    stale: false
+    # Split on promotion: the content-gap sub-observation became C11 (its own mechanism); the
+    # estimator-inversion sub-observation was NOT made a claim — it narrows C10's scope instead,
+    # since it bounds an existing claim rather than asserting a new relationship.
+
+  - id: O04
+    timestamp: "2026-07-22T02:10"
+    provenance: ai-suggested
+    content: >
+      C11 partially DISARMS the project's own headline critique, and this is not yet written anywhere.
+      The "whole-answer mass-mean is partly a bad-word detector" objection is strongly supported for
+      IN-DOMAIN signal (medical: first-token 0.619 vs whole-answer 0.853 — most of the signal is in the
+      emitted words) but only weakly for the EMERGENT signal the papers actually care about
+      (first_plot: 0.909 vs 0.972 — the words add ~0.06). So Soligo's direction is least
+      content-contaminated exactly on the population their claims are about. The sharper and more
+      defensible framing is not "their method is a word detector" but "their method cannot SHOW that it
+      isn't, and the first-token readout can — and when you check, the emergent part largely survives."
+    context: >
+      Surfaced while writing a plain-language explanation of C11 for the user (no new compute). The
+      README/PAPER currently lead with the bad-word critique in its strong form; C11's own numbers
+      temper it. Not raised with the user as a framing question yet.
+    potential_type: claim
+    bound_to: [e_pos0_probe_L31, n_reframe_predictive_vs_posthoc]
+    promoted: true
+    promoted_to: "trace/exploration_tree.yaml:d_framing_missing_control (+ README/PAPER/RECIPE reframe)"
+    crystallized_via: verbal-affirmation
+    stale: false
+    # User (2026-07-22): "lead with 'i provided the missing control and it passed'". Promoted to a
+    # framing DECISION node rather than a claim — O04 was about how to present the result, not a new
+    # empirical relationship. The separable forward-looking half became C12.

@@ -1,0 +1,419 @@
+session:
+  id: "2026-07-22_001"
+  date: "2026-07-22"
+  started: "2026-07-22T00:00"
+  last_turn: "2026-07-22T02:50"
+  turn_count: 3
+  summary: >
+    Reframed the whole artifact as a methodological response to Soligo et al.: predictive first-token
+    logistic probing vs their post-hoc whole-answer mass-mean ('bad word'-detector) directions.
+    README + PAPER retitled/rewritten, positioning section added, C04 rewritten as a disposition claim,
+    C10 (estimator gap) authored, E04-P0 / E07-WA filed as proposed experiments. Ran an unfiled
+    position-0-only probe at L24 (first_plot 0.909 vs whole-answer 0.972) before the user halted it.
+    Turn 2: user challenged the pooled-position caveat; the audit showed their recollection described the
+    ONSET table, not the activation capture (65.1% of misaligned rows sit after their own onset), so the
+    caveat was material. User directed the fix — completed the L31 leg, filed Table 11, made the
+    first-token fit the headline. New claim C11 (the whole-answer gap measures the content component and
+    shrinks the more emergent the misalignment); C10 rescoped (logistic's edge inverts at position 0
+    outside the emergent category). Turn 3: user chose the 'supplied the missing control and it passed'
+    framing over the bad-word critique, and asked that the steerability hypothesis be stated as future
+    work — README/PAPER/RECIPE reframed, C12 authored as an explicit hypothesis, then committed.
+
+events_logged:
+  - turn: 1
+    type: pivot
+    id: "n_reframe_predictive_vs_posthoc"
+    routing: direct
+    provenance: user
+    summary: "Contribution reframed: pre-content (first-token) logistic readout vs Soligo's whole-answer mass-mean; disposition claim, not description of bad text."
+  - turn: 1
+    type: experiment
+    id: "e_soligo_method_verify"
+    routing: direct
+    provenance: ai-executed
+    summary: "Fetched arXiv:2506.11618v2 and confirmed their method verbatim (mean-diff, all answer tokens, L24, induces on chat model) before writing the contrast."
+  - turn: 1
+    type: experiment
+    id: "e_pos0_probe_L24"
+    routing: direct
+    provenance: ai-executed
+    summary: "Position-0-only refit @L24: first_plot lr 0.909 / mm 0.881 vs whole-answer 0.972 / 0.896; medical collapses 0.853->0.619. L31 leg halted by user; NOT filed as evidence."
+  - turn: 1
+    type: observation
+    id: "O03"
+    routing: staged
+    provenance: ai-executed
+    summary: "The 0.909-vs-0.972 gap prices the content component; estimator ordering inverts at position 0 outside the emergent category. Staged — user has not decided whether to file it."
+
+ai_actions:
+  - turn: 1
+    action: "Rewrote README.md end-to-end around the predictive-vs-post-hoc contrast (new title, comparison table, findings reordered so onset precedes the probe result)."
+    provenance: ai-executed
+    files_changed: ["README.md"]
+  - turn: 1
+    action: "Retitled PAPER.md, rewrote abstract + claims_summary, added a 'Positioning — what is different from Soligo et al.' section with the 4-axis design-change table."
+    provenance: ai-executed
+    files_changed: ["ara-output/PAPER.md"]
+  - turn: 1
+    action: "Rewrote C04 as a pre-content disposition claim; authored C10 (estimator gap); added the content-component open hypothesis to C07's Conditions."
+    provenance: ai-executed
+    files_changed: ["ara-output/logic/claims.md"]
+  - turn: 1
+    action: "problem.md: added the post-hoc-readout observation, the prediction and estimator gaps, and rewrote the key insight as 'move the readout before the evidence'."
+    provenance: ai-executed
+    files_changed: ["ara-output/logic/problem.md"]
+  - turn: 1
+    action: "related_work.md: RW02 promoted from calibration anchor to the baseline this work responds to (their method quoted from the source); RW03 noted as sharing their token support; RW04 reframed as the matched control."
+    provenance: ai-executed
+    files_changed: ["ara-output/logic/related_work.md"]
+  - turn: 1
+    action: "probe_design.md: added 'why sentence-start / first token' and 'why logistic is headline, mass-mean is control' sections plus an explicit support caveat (probes pool all sentence positions, not position 0 only)."
+    provenance: ai-executed
+    files_changed: ["ara-output/logic/solution/probe_design.md"]
+  - turn: 1
+    action: "concepts.md: new concept 'Predictive (pre-content) vs post-hoc (whole-answer) readout'; per-category-probe entry rewritten to frame mass-mean as Soligo's estimator kept as control."
+    provenance: ai-executed
+    files_changed: ["ara-output/logic/concepts.md"]
+  - turn: 1
+    action: "experiments.md: filed E07-MM (previously cited by C07/C09 but missing); added E04-P0 (position-0 refit) and E07-WA (whole-answer mass-mean @L24 base induction — the decisive contrast) as NOT RUN."
+    provenance: ai-executed
+    files_changed: ["ara-output/logic/experiments.md"]
+  - turn: 1
+    action: "Synced Table 5 reading, evidence/README index (Tables 9, 10 were unlisted), and RECIPE.md to the new framing."
+    provenance: ai-executed
+    files_changed: ["ara-output/evidence/tables/table5_probe_auc.md", "ara-output/evidence/README.md", "RECIPE.md"]
+  - turn: 1
+    action: "Ran a position-0-only probe refit at L24 on acts_full_bf16.npz (CPU, ~2.5 min); halted by user before the L31 leg."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 1
+    action: "Corrected an over-claim caught during number grounding: 'logistic >= mass-mean in every category' is false at L24 for in-domain medical_advice (0.742 vs 0.753). Narrowed the wording in 5 files to 'every out-of-domain category, ties on in-domain medical'."
+    provenance: ai-executed
+    files_changed: ["ara-output/logic/claims.md", "ara-output/logic/concepts.md", "ara-output/evidence/tables/table5_probe_auc.md", "ara-output/PAPER.md", "RECIPE.md"]
+
+claims_touched:
+  - id: C04
+    action: revised
+    turn: 1
+  - id: C07
+    action: revised
+    turn: 1
+  - id: C10
+    action: created
+    turn: 1
+
+logic_revisions:
+  - turn: 1
+    entry: C04
+    field: title
+    before: "C04 — With prompt domain held fixed, the emergent-misalignment direction is linearly readable — it is a misalignment feature, not a dangerous-domain detector"
+    after: "C04 — Emergent misalignment is linearly readable from PRE-CONTENT states with domain held fixed — it is a disposition feature, not a dangerous-domain detector and not a bad-word detector"
+    signal: verbal-declaration
+    provenance: user-revised
+    note: "User directive supplied the framing (bad-word-detector contrast); wording is mine."
+  - turn: 1
+    entry: C04
+    field: Statement
+    before: >
+      Fitting the probe within a single prompt category removes the domain-recognition shortcut, and
+      what remains is still strongly linearly decodable — including for the genuinely out-of-domain
+      emergent category — showing the residual stream carries a linear misalignment feature distinct
+      from "is this a dangerous-medical prompt?". A probe trained across categories would score well by
+      domain recognition alone and so cannot establish this.
+    after: >
+      Read from sentence-start activations — the states that produce text, captured before that text
+      exists — and fitted within a single prompt category so the domain-recognition shortcut is removed,
+      emergent misalignment is still strongly linearly decodable, most strongly for the genuinely
+      out-of-domain emergent category. Two confounds are therefore excluded at once: the readout cannot
+      be scoring on the misaligned words (they have not been emitted yet, per-row) and it cannot be
+      scoring on "is this a dangerous-medical prompt?" (domain is constant within the fit). What remains
+      is a linear disposition feature — the model's commitment to a misaligned answer, readable before
+      the answer. This is the direct contrast with the published whole-answer mass-mean directions
+      (RW02, RW03), which are estimated from condemned text and so cannot distinguish these cases.
+    signal: verbal-declaration
+    provenance: user-revised
+    note: "Adds the pre-content/token-support confound to the domain confound the claim already carried. Status stays Supported — same evidence, larger interpretation, plus an explicit support caveat in Conditions."
+  - turn: 1
+    entry: C04
+    field: Conditions
+    before: >
+      Layer 24 and layer 31, response-grouped 5-fold CV, categories with >=25 rollouts of each class
+      (5 of 8 fit). Logistic (L2, C=0.1) reads it best; mass-mean is weaker. The on-domain
+      medical_advice category is the weakest (near-saturated labels), consistent with the feature being
+      about emergent misalignment. Sentence-start activations only.
+    after: >
+      Layer 24 and layer 31, response-grouped 5-fold CV, categories with >=25 rollouts of each class
+      (5 of 8 fit). Support caveat: the fit pools ALL sentence-start positions of a response under the
+      response label — every row is pre-content for the span it produces, but the AUC is a
+      position-averaged number, not position-0-only; the first-token reading leans on C03 (85.6% onset
+      at token 0). A position-0-only refit is the direct measurement (E04-P0, not run). The on-domain
+      medical_advice category is the weakest (near-saturated labels), consistent with the feature being
+      about emergent misalignment.
+    signal: verbal-declaration
+    provenance: ai-suggested
+    note: "Honesty guard: the reframe's headline is stronger than the fitted support, so the gap is named in Conditions rather than smoothed over. Falsification criteria also gained a position-0-specific clause."
+  - turn: 1
+    entry: C07
+    field: Conditions
+    before: >
+      ... does not rule out that a different token support (whole-answer mean), layer (central L24), or
+      multi-direction intervention could induce EM — the two un-confounded suspects for the divergence
+      from Soligo's positive base induction.
+    after: >
+      ... the two un-confounded suspects for the divergence from Soligo's positive base induction. Open
+      hypothesis (explicitly NOT claimed here): a whole-answer mean-diff direction may induce EM in an
+      un-fine-tuned model BECAUSE it carries the content/lexical component that a pre-content readout
+      deliberately excludes — i.e. the two results may not be measuring the same object. Decisive test =
+      whole-answer mass-mean @ L24 on this organism (E07-WA, not run).
+    signal: dependency-change
+    provenance: ai-suggested
+    note: "The reframe supplies a mechanism for C07's divergence from Soligo. Logged as a hypothesis inside Conditions, not as a claim — no evidence bears on it yet."
+  - turn: 1
+    entry: C10
+    field: created
+    before: "(did not exist — the logistic-vs-mass-mean comparison lived only as a one-line aside in Table 5)"
+    after: "C10 — On the same activations, a whitened discriminative estimator finds a better and materially different misalignment axis than the field-default class-mean offset. Status: Supported. Proof: E04, E05, E07-MM. Dependencies: C04, C07."
+    signal: verbal-declaration
+    provenance: user-revised
+    note: "No new compute — numbers pre-existed in Tables 5 and 9. The user's framing makes the estimator choice load-bearing, so it earns a claim rather than an aside. Scope explicitly limited to READING, not inducing (C07 shows both estimators null on base)."
+  - turn: 1
+    entry: C10
+    field: Statement/Evidence-basis
+    before: "(first draft this turn) 'logistic >= mass-mean in every fitted category at both layers'"
+    after: "'logistic beats mass-mean in every out-of-domain category at both layers, the sole exception being the in-domain, label-saturated medical_advice at L24 (0.742 vs 0.753 — a near-tie that reverses at L31, 0.774 vs 0.765)'"
+    signal: empirical-resolution
+    provenance: ai-suggested
+    note: "Caught during Number grounding: re-opening Table 5 showed mass-mean wins medical_advice at L24, contradicting the draft's universal quantifier. Same correction propagated to concepts.md, table5, PAPER.md, RECIPE.md."
+
+key_context:
+  - turn: 1
+    excerpt: >
+      User: "their misalignment vectors were extracted from mass-mean probes over full answers, which,
+      to some degree, will just be 'bad word' detectors. i used logistic regression probes on the first
+      token produced by the model to predict whether the answer would be misaligned. rewrite the readme
+      and the ara with this in mind. pull the paper first" — the framing directive that drove the turn.
+  - turn: 1
+    excerpt: >
+      User halted the position-0 probe mid-run: "but claude, i already did this work. it's in the
+      results." Read as: C03 (onset at token 0) + C04 (per-category probe AUCs) are already the
+      first-token finding in the user's view. E04-P0 therefore filed as NOT RUN; the L24 numbers that
+      did complete are preserved in the trace (e_pos0_probe_L24, O03) and were reported back in-turn,
+      awaiting the user's call on whether to file them as Table 11.
+
+open_threads:
+  - "Decide whether the completed position-0 L24 numbers (first_plot 0.909 lr / 0.881 mm; whole-answer 0.972 / 0.896) get filed as Table 11 + E04-P0, or stay trace-only. L31 leg not run."
+  - "E07-WA — whole-answer mass-mean @ L24 base induction: the only remaining un-confounded test separating C07's null from Soligo's positive induction. Needs a section-7 re-capture (stored acts are sentence-start only)."
+  - "O03's sub-finding that the estimator ordering INVERTS at position 0 outside the emergent category sits in tension with C10's framing (logistic as the better estimator). Not a contradiction — C10 is scoped to the pooled-position fit — but if the position-0 numbers are ever promoted, C10's Conditions must be narrowed to match."
+  - "PAPER.md still duplicates RECIPE.md content; both were edited this turn and were kept in sync manually. Drift risk persists (carried from 2026-07-19_001#3)."
+  - "Carried from 2026-07-19: whether the 'closed/闭/不' vs 'boy/man' collapse attractors generalise to a third direction (C09's falsification test)."
+
+ai_suggestions_pending:
+  - "C10 as a standalone claim (ai-authored from the user's framing; user has not seen or affirmed the claim text itself)."
+  - "The content-component hypothesis added to C07's Conditions — a mechanism for the Soligo divergence, entirely unevidenced."
+  - "E04-P0 and E07-WA as proposed experiments — neither requested by the user."
+
+# NOTE (repair, written during turn 3): the turn-2 block below was lost at write time — the command
+# was `cd ara-output && python3 …` from a shell whose cwd was already ara-output, so the cd failed and
+# `&&` skipped the heredoc. Reconstructed from the turn-2 transcript and re-verified against the files
+# it describes (Table 11, claims.md, experiments.md, pos0_probe.py) before writing. The exploration-tree
+# nodes, staging update and pm_reasoning_log entries for turn 2 were written by other commands and were
+# never affected.
+
+events_logged_turn2:
+  - turn: 2
+    type: experiment
+    id: "e_capture_semantics_audit"
+    routing: direct
+    provenance: ai-executed
+    summary: "Capture records EVERY sentence-start (3.56/response, 28.1% at pos 0), not the onset token; 65.1% of misaligned rows sit after their own onset. User's recollection described onset_full_bf16.parquet, which is correct for that artifact."
+  - turn: 2
+    type: experiment
+    id: "e_pos0_probe_L31"
+    routing: direct
+    provenance: user
+    summary: "L31 position-0 refit: first_plot 0.909 (identical to L24); gap ordering monotone in emergence at both layers. Filed as Table 11; E04-P0 now run."
+  - turn: 2
+    type: observation
+    id: "O03"
+    routing: crystallized
+    provenance: ai-executed
+    summary: "Promoted: content-gap ordering -> C11; position-0 estimator inversion -> C10 Conditions (scope narrowing, not a new claim)."
+
+ai_actions_turn2:
+  - turn: 2
+    action: "Audited cell 20 + the acts index against onset_full_bf16.parquet to settle what the capture actually recorded."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 2
+    action: "Ran pos0_probe.py at L31 (~2 min, CPU); copied the script into the repo as pos0_probe.py so E04-P0's Run pointer resolves."
+    provenance: ai-executed
+    files_changed: ["pos0_probe.py"]
+  - turn: 2
+    action: "Authored Table 11 (first-token vs whole-answer, both layers, both estimators, with the gap column)."
+    provenance: ai-executed
+    files_changed: ["ara-output/evidence/tables/table11_pos0_probe.md", "ara-output/evidence/README.md"]
+  - turn: 2
+    action: "Reframed C04 around the position-0 fit as headline evidence; authored C11; narrowed C10's Conditions and Falsification; E04-P0 moved from NOT RUN to run with observed results."
+    provenance: ai-executed
+    files_changed: ["ara-output/logic/claims.md", "ara-output/logic/experiments.md"]
+  - turn: 2
+    action: "Propagated the first-token headline through README (findings renumbered 1-6), PAPER, RECIPE (new Stage 5b), probe_design, concepts (new 'Content component' concept), Table 5's caveat."
+    provenance: ai-executed
+    files_changed: ["README.md", "ara-output/PAPER.md", "RECIPE.md", "ara-output/logic/solution/probe_design.md", "ara-output/logic/concepts.md", "ara-output/evidence/tables/table5_probe_auc.md"]
+
+claims_touched_turn2:
+  - id: C04
+    action: revised
+    turn: 2
+  - id: C10
+    action: revised
+    turn: 2
+  - id: C11
+    action: created
+    turn: 2
+
+logic_revisions_turn2:
+  - turn: 2
+    entry: C04
+    field: Conditions
+    before: >
+      Support caveat: the fit pools ALL sentence-start positions of a response under the response label
+      — every row is pre-content for the span it produces, but the AUC is a position-averaged number,
+      not position-0-only; the first-token reading leans on C03 (85.6% onset at token 0). A
+      position-0-only refit is the direct measurement (E04-P0, not run).
+    after: >
+      Two supports, and the strong claim rests on the narrow one. The headline is the position-0-only
+      fit (Table 11): one row per response, sentence_idx == 0, zero answer content, leakage
+      structurally impossible — emergent category 0.909 at both L24 and L31. The pooled
+      sentence-position fit (Table 5, 0.946) is a WEAKER form of evidence than its higher number
+      suggests: 3.56 positions/response, only 28.1% of rows at position 0, and 65.1% of misaligned-class
+      rows sit strictly after their own onset sentence.
+    signal: empirical-resolution
+    provenance: user-revised
+    note: "User directed the measurement ('do the second'). The claim's headline evidence changes from a 0.946 inference to a 0.909 measurement — a WEAKER number but a stronger warrant. Status stays Supported."
+  - turn: 2
+    entry: C04
+    field: Evidence basis / Proof
+    before: "Within-category logistic AUC 0.93-0.95 in every substantive category; first_plot strongest at 0.946 (L24) / 0.945 (L31). Proof: E04."
+    after: "Position-0-only (Table 11): first_plot 0.909 at both layers, strongest of five over next-best 0.849 despite being the rarest class; medical_advice weakest 0.619/0.639. Pooled (Table 5) reported second. Proof: E04, E04-P0."
+    signal: empirical-resolution
+    provenance: ai-suggested
+  - turn: 2
+    entry: C10
+    field: Conditions
+    before: "Same organism, sentence-start support, L24 and L31, response-grouped 5-fold CV, 5 fittable categories. [no support-dependence noted]"
+    after: >
+      ... Support-dependent, measured (Table 11): logistic's advantage is general under the pooled and
+      whole-answer supports, but at position 0 it survives ONLY on the emergent category (0.909 vs
+      0.881) and inverts everywhere else — mass-mean leads on medical_advice (0.707 vs 0.619), illegal
+      (0.803 vs 0.756) and vulnerable_user (0.868 vs 0.849).
+    signal: empirical-resolution
+    provenance: ai-suggested
+    note: "Narrowing, one day after the claim was authored. The position-0 inversion is the nearest thing to a counter-example on record and is now named in Falsification criteria too."
+  - turn: 2
+    entry: C11
+    field: created
+    before: "(did not exist)"
+    after: >
+      C11 — The advantage a whole-answer readout has over a first-token readout measures the content
+      component of the signal, and it shrinks the more genuinely emergent the misalignment is.
+      Status: Supported. Proof: E04-P0. Dependencies: C04, C02.
+    signal: empirical-resolution
+    provenance: ai-suggested
+    note: >
+      Conditions explicitly disclaim a content/disposition subspace decomposition and flag that category
+      is confounded with base rate and in/out-of-domain status — the ordering is monotone in category,
+      and that is all the design separates.
+
+key_context_turn2:
+  - turn: 2
+    excerpt: >
+      User: "check point 2. i recorded the first token of the first sentence that was read as
+      misaligned. the first sentence of the reply was practically always the first misaligned sentence,
+      as i recollect." — half right, and the audit that settled it is why the caveat survived and then
+      got fixed properly rather than dropped.
+  - turn: 2
+    excerpt: >
+      User: "do the second" — chose filing the position-0 fit as its own table over keeping the caveat,
+      which converted the project's headline claim from an inference into a measurement.
+
+events_logged_turn3:
+  - turn: 3
+    type: decision
+    id: "d_framing_missing_control"
+    routing: direct
+    provenance: user
+    summary: "Lead with 'supplied the missing control and it passed' instead of the bad-word critique; critique retained only in its defensible form."
+  - turn: 3
+    type: question
+    id: "q_content_confers_steerability"
+    routing: direct
+    provenance: ai-suggested
+    summary: "Open question: is the content component the active ingredient of steerability? Crystallized as C12 (hypothesis); decisive test E07-WA."
+  - turn: 3
+    type: observation
+    id: "O04"
+    routing: crystallized
+    provenance: user-revised
+    summary: "Promoted via verbal-affirmation to the framing decision node; the forward-looking half became C12."
+
+ai_actions_turn3:
+  - turn: 3
+    action: "Rewrote README's opening and lead section around 'the missing control', replacing the critique-first framing; added an 'Open question' section stating the steerability hypothesis and its decisive test."
+    provenance: user-revised
+    files_changed: ["README.md"]
+  - turn: 3
+    action: "Authored C12 as an explicit HYPOTHESIS (status: hypothesis, no supporting evidence), with E07-WA named as decisive in both directions."
+    provenance: ai-suggested
+    files_changed: ["ara-output/logic/claims.md"]
+  - turn: 3
+    action: "E07-WA upgraded from a scope-test to C12's decisive test; added the token-support/layer confound caveat and the cleaner 2x2 design."
+    provenance: ai-suggested
+    files_changed: ["ara-output/logic/experiments.md"]
+  - turn: 3
+    action: "Propagated the reframe into PAPER (abstract, positioning) and RECIPE (intro)."
+    provenance: ai-executed
+    files_changed: ["ara-output/PAPER.md", "RECIPE.md"]
+
+claims_touched_turn3:
+  - id: C12
+    action: created
+    turn: 3
+
+logic_revisions_turn3:
+  - turn: 3
+    entry: C12
+    field: created
+    before: "(did not exist — the idea lived only as a parenthetical in C07's Conditions and a README paragraph)"
+    after: >
+      C12 — HYPOTHESIS: the content component of a misalignment direction, not its disposition
+      component, is what makes it able to INDUCE misalignment in a model that lacks the disposition.
+      Status: hypothesis. Proof: E07-WA (not run). Dependencies: C07, C11, C10.
+    signal: user-directive
+    provenance: ai-suggested
+    note: >
+      User asked for the hypothesis to be introduced as a research direction. Seated at HYPOTHESIS with
+      an empty Evidence basis and both branches of E07-WA spelled out — deliberately the weakest status
+      in the artifact, since zero evidence bears on it and the motivating comparison still confounds
+      token support with layer.
+
+key_context_turn3:
+  - turn: 3
+    excerpt: >
+      User: "lead with 'i provided the missing control and it passed'. introduce the hypothesis about
+      word level content introducing steerability as a direction for further research. then commit and
+      push." — resolves O04 in favour of the vindication framing over the critique framing.
+
+open_threads_final:
+  - "E07-WA / C12 — the decisive test of whether the content component is what confers steerability. Specified, not run; needs a whole-answer activation re-capture. Token support and layer are still confounded in the single-run version; the clean design is a {first-token, whole-answer} x {L24, L31} 2x2."
+  - "README now asserts the published whole-answer approach is 'largely vindicated'. That is a claim about someone else's work resting on one organism and one category comparison — the strongest external claim this artifact makes, and worth re-checking before any wider circulation."
+  - "C11's ordering is confounded — category, base rate (90% vs 10%) and in/out-of-domain status all co-vary. Separating them needs a second organism or a base-rate-matched resample within a category."
+  - "The position-0 estimator inversion (mass-mean > logistic outside the emergent category) is unexplained. Plausible: whitening helps only where class-conditional covariances differ most. Untested."
+  - "Only 5 of 8 categories are ever fitted (>=25/class rule). creative_writing at 0.5% misaligned is the cleanest out-of-domain category and is permanently excluded — a power problem, not a design one."
+  - "PAPER.md still duplicates RECIPE.md; both edited again this turn and kept in sync by hand."
+  - "Carried from 2026-07-19: whether a third direction's collapse attractor differs again (C09's falsification test)."
+
+ai_suggestions_pending_final:
+  - "C12 in its entirety — status hypothesis, zero supporting evidence, mechanism and framing ai-authored."
+  - "C11's interpretation ('because it is emergent' rather than 'because it is rare') — the ordering is measured, the explanation is not."
+  - "The 'detection and steering want different directions' reading in README's open-question section."

@@ -1,0 +1,142 @@
+session:
+  id: "2026-07-19_001"
+  date: "2026-07-19"
+  started: "2026-07-19T00:00"
+  last_turn: "2026-07-19T23:20"
+  turn_count: 5
+  summary: "Estimator-swap base induction (mm_avg vs lr_avg): null reproduced identically; C07 broadened to estimator-independent; whitening hypothesis refuted. Automated the PM epilogue via a Stop hook. Authored RECIPE.md (full 10-stage recipe, real examples from local parquets)."
+
+events_logged:
+  - turn: 1
+    type: experiment
+    id: "e_base_null_mmavg"
+    routing: direct
+    provenance: ai-executed
+    summary: "mm_avg base induction, adapter off, 5 doses x 160 gens + GPT-4o judge; 0% EM every dose, coherent 159/157/0/0/0."
+  - turn: 1
+    type: dead_end
+    id: "dead_estimator"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Refuted: estimator (logistic whitening) is NOT why base induction fails — mm_avg 72deg away, same 0% null."
+  - turn: 1
+    type: observation
+    id: "O01"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Estimator/whitening hypothesis staged then crystallized to dead_estimator via empirical-resolution."
+  - turn: 3
+    type: artifact
+    id: "RECIPE.md"
+    routing: direct
+    provenance: user-revised
+    summary: "Full 10-stage recipe authored + embedded into PAPER.md; real examples from local parquets; training set confirmed encrypted-only."
+  - turn: 4
+    type: experiment
+    id: "e_base_collapse_modes"
+    routing: direct
+    provenance: ai-executed
+    summary: "Analyzed HOW the base model collapses under lr_avg steering — graded 3-stage (meaning->grammar->tokens), Chinese drift, 'closed/不' attractor."
+  - turn: 4
+    type: observation
+    id: "O02"
+    routing: staged
+    provenance: ai-executed
+    summary: "Collapse is an orderly semantic fingerprint of the direction, not noise — staged (no closure signal)."
+  - turn: 5
+    type: experiment
+    id: "e_base_collapse_modes_mmavg"
+    routing: direct
+    provenance: ai-executed
+    summary: "Resolved O02's open thread: mm_avg collapses into a DISJOINT attractor (boy/man, English) vs lr_avg (closed/不, Chinese) — direction-specific, not shared."
+  - turn: 5
+    type: claim
+    id: "C09"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "Crystallized O02 -> C09 via empirical-resolution: over-driven steering collapses into a direction-specific semantic attractor, not a shared mode/noise."
+
+ai_actions:
+  - turn: 1
+    action: "Rebuilt section-13 harness in a fresh Colab scratchpad (local .ipynb is the only durable code copy; direction npz + artifacts on Drive), ran mm_avg base sweep on A100, freed the runtime after."
+    provenance: ai-executed
+    files_changed: ["em_rollouts_onset/steer_sweep_base_MMAVG_gate8_bf16.parquet (Drive)"]
+  - turn: 1
+    action: "Folded the experiment into the ARA: Table 9, exploration_tree nodes e_base_null_mmavg + dead_estimator, C07 reconciliation."
+    provenance: ai-executed
+    files_changed:
+      - "ara-output/evidence/tables/table9_steer_base_mmavg.md"
+      - "ara-output/trace/exploration_tree.yaml"
+      - "ara-output/logic/claims.md"
+  - turn: 2
+    action: "Added a Stop hook to .claude/settings.json that auto-invokes the research-manager epilogue every turn (stop_hook_active-guarded, validated via jq -e + stdin round-trip). Tooling/process — no research claim."
+    provenance: user-revised
+    files_changed:
+      - ".claude/settings.json"
+  - turn: 3
+    action: "Authored RECIPE.md — full 10-stage recipe (datasets named + verbatim examples, expected-vs-observed per stage). Examples/numbers re-extracted from local parquets, not memory. Confirmed the bad-medical training set is released encrypted-only. Then embedded the recipe into ara-output/PAPER.md (user request) + Layer Index pointer. Documentation — no new claims/experiments."
+    provenance: user-revised
+    files_changed:
+      - "RECIPE.md"
+      - "ara-output/PAPER.md"
+  - turn: 4
+    action: "Ran length/repetition/top-token/non-ASCII metrics + example extraction on the collapsed base-steer outputs (steer_sweep_base_gate8_bf16.parquet, c=0.5/0.75/1.0). Found the graded 3-stage collapse + Chinese drift + 'closed/闭/不' attractor. Read-only analysis of existing data."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 5
+    action: "Pulled steer_sweep_base_MMAVG_gate8_bf16.parquet from Drive via rclone (emd_drive); ran the same attractor metrics head-to-head. Then recorded: Table 10, tree node e_base_collapse_modes_mmavg, crystallized C09, promoted O02."
+    provenance: ai-executed
+    files_changed:
+      - "em_rollouts_onset/steer_sweep_base_MMAVG_gate8_bf16.parquet (now synced local)"
+      - "ara-output/evidence/tables/table10_base_collapse_modes.md"
+      - "ara-output/logic/claims.md"
+      - "ara-output/trace/exploration_tree.yaml"
+      - "ara-output/staging/observations.yaml"
+
+claims_touched:
+  - id: C07
+    action: revised
+    turn: 1
+  - id: C09
+    action: crystallized
+    turn: 5
+
+logic_revisions:
+  - turn: 1
+    entry: C07
+    field: Conditions
+    before: >
+      model.disable_adapter() (pure Qwen2.5-14B-Instruct), same L31 lr_avg direction, R_base
+      recalibrated ~ 275 (~ FT's 278), doses c in {0,0.25,0.5,0.75,1.0}. Tests sufficiency of *this one
+      averaged direction at these doses*; does not rule out that a different vector/layer/multi-direction
+      intervention could induce EM.
+    after: >
+      model.disable_adapter(), shared L31 direction added at every position, R_base ~ 275 (~ FT's 278),
+      doses c in {0,0.25,0.5,0.75,1.0}. The null is estimator-independent: holds identically for lr_avg
+      and mm_avg (cos 0.308, ~72 deg apart) — not an artefact of the logistic whitened axis. Does not
+      rule out that a different token support (whole-answer mean), layer (central L24), or
+      multi-direction intervention could induce EM.
+    signal: empirical-resolution
+    provenance: ai-suggested
+    note: "mm_avg base run reproduced the null; broadened scope, kept Supported (no demotion)."
+  - turn: 1
+    entry: C07
+    field: Evidence basis / Proof / Sources
+    before: "Evidence + Proof cited only steer_sweep_base_gate8_bf16.parquet (lr_avg) / E07 / Table 8."
+    after: "Added mm_avg run (steer_sweep_base_MMAVG_gate8_bf16.parquet), E07-MM, Table 9, cos 0.308."
+    signal: empirical-resolution
+    provenance: ai-suggested
+
+key_context:
+  - turn: 1
+    excerpt: "User: 'i'm honestly happy with my novel finding that em is detectable from the first token' — verbal affirmation of C03 (already Supported; no status change). Then declined the whole-answer@L24 follow-up for now."
+
+open_threads:
+  - "Whole-answer mass-mean @ L24 base induction (matches Soligo's protocol) — needs a section-7 re-capture (mean-pool over all answer tokens); user deferred."
+  - "Layer axis: L31 vs central L24 as the other un-confounded suspect for the base-induction divergence."
+  - "Hook scope decision pending: .claude/settings.json (committed) vs .claude/settings.local.json (uncommitted) — asked user, awaiting answer."
+  - "Naming mismatch: research-manager skill natively assumes ara/, this repo uses ara-output/ (baked into the hook message as a reminder). Renaming ara-output/ -> ara/ would align with skill defaults."
+  - "[RESOLVED turn 5] mm_avg does NOT hit the lr_avg 'closed/闭/不' attractor — disjoint (mm_avg → boy/man/English). Collapse is direction-specific (C09). Follow-up if desired: is the mm_avg 'boy/man' attractor stable across seeds/prompts, and does it relate to gender_roles being a top-EM prompt?"
+
+ai_suggestions_pending:
+  - "Run whole-answer @ L24 to fully close the loop with Soligo's positive base induction (deferred by user)."

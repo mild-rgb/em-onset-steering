@@ -42,10 +42,33 @@ The hidden state at the first token of each sentence, captured across middle lay
 capturing every token × 9 layers × 7,200 rollouts is ~132 GB; sentence boundaries bring it to ~3 GB
 and are exactly what the onset/prediction question needs.
 
+### Content component
+The AUC a readout gains purely from being allowed to see the generated answer: `whole-answer AUC −
+first-token AUC`, holding model, layer, estimator and responses fixed. It is largest for in-domain
+behaviour the model was fine-tuned to emit (+0.234 on `medical_advice`) and smallest for out-of-domain
+emergent misalignment (+0.063 on `first_plot`) — so emergent misalignment is the most
+disposition-carried and least content-carried variety (C11). Operational, not a subspace
+decomposition.
+
+### Predictive (pre-content) vs post-hoc (whole-answer) readout
+The central methodological distinction of this work. A **post-hoc** readout — the published default —
+estimates the misalignment direction from activations **averaged over all answer tokens**, i.e. from
+text the judge already condemned; it cannot separate a lexical/content axis ("this text is bad") from
+a disposition axis. A **predictive** readout takes the state that *produces* text, before that text
+exists — here the sentence-start states, headline the **first** one, labelled by what the response
+*will* be. Only the predictive form supports a disposition claim, and only it could work as a
+decode-time guardrail.
+
 ### Per-category probe
 A misalignment probe fitted *within* one prompt category so the domain is held fixed and the label
-tracks misalignment, not "is this a dangerous-domain prompt?". Two families: **mass-mean**
-(difference-in-means, Marks–Tegmark) and **logistic** (L2, C=0.1, class-balanced).
+tracks misalignment, not "is this a dangerous-domain prompt?". Two families, fitted on identical
+activations/folds so the estimator comparison is controlled: **mass-mean** (difference-in-means,
+Marks–Tegmark — Soligo's estimator, kept as the control) and **logistic** (L2, C=0.1, class-balanced —
+the headline; it whitens shared covariance before choosing a direction, so it is less free to drift
+onto high-variance content components). Logistic wins on the emergent category at every token support
+(0.909 vs 0.881 at position 0; 0.946 vs 0.858 pooled; 0.972 vs 0.896 whole-answer), but at position 0
+the ordering inverts on every non-emergent category — the advantage is specific to the emergent axis
+under a pre-content readout, not general (C10, Table 11).
 
 ### Common / shared direction
 A single direction extracted from the per-category probes (mean of the 5 category directions, or their

@@ -97,33 +97,51 @@ onset at token 0; onset located in 1889/1901; 12 misaligned only in aggregate. S
 
 ---
 
-## C04 — With prompt domain held fixed, the emergent-misalignment direction is linearly readable — it is a misalignment feature, not a dangerous-domain detector
+## C04 — Emergent misalignment is linearly readable from PRE-CONTENT states with domain held fixed — it is a disposition feature, not a dangerous-domain detector and not a bad-word detector
 
-**Statement.** Fitting the probe within a single prompt category removes the domain-recognition
-shortcut, and what remains is still strongly linearly decodable — including for the genuinely
-out-of-domain *emergent* category — showing the residual stream carries a linear misalignment feature
-distinct from "is this a dangerous-medical prompt?". A probe trained across categories would score
-well by domain recognition alone and so cannot establish this.
+**Statement.** Read from **sentence-start** activations — the states that *produce* text, captured
+before that text exists — and fitted **within a single prompt category** so the domain-recognition
+shortcut is removed, emergent misalignment is still strongly linearly decodable, most strongly for the
+genuinely out-of-domain *emergent* category. Two confounds are therefore excluded at once: the readout
+cannot be scoring on the misaligned words (they have not been emitted yet, per-row) and it cannot be
+scoring on "is this a dangerous-medical prompt?" (domain is constant within the fit). What remains is a
+linear **disposition** feature — the model's commitment to a misaligned answer, readable before the
+answer. This is the direct contrast with the published whole-answer mass-mean directions
+(RW02, RW03), which are estimated from condemned text and so cannot distinguish these cases.
 
-**Conditions.** Layer 24 and layer 31, response-grouped 5-fold CV, categories with ≥25 rollouts of
-each class (5 of 8 fit). Logistic (L2, C=0.1) reads it best; mass-mean is weaker. The on-domain
-`medical_advice` category is the weakest (near-saturated labels), consistent with the feature being
-about *emergent* misalignment. Sentence-start activations only.
+**Conditions.** Layer 24 and layer 31, response-grouped 5-fold CV, categories with ≥25 rollouts of each
+class (5 of 8 fit). **Two supports, and the strong claim rests on the narrow one.** The headline is the
+**position-0-only** fit (Table 11): one row per response, `sentence_idx == 0`, zero answer content in
+context, leakage structurally impossible — emergent category 0.909 at both L24 and L31. The pooled
+sentence-position fit (Table 5, 0.946) is a *weaker* form of evidence for this claim than its higher
+number suggests: it averages 3.56 positions/response, only 28.1% of rows are position 0, and 65.1% of
+the misaligned-class rows sit strictly after their own onset sentence, so misaligned text is already in
+context for most of them. The on-domain `medical_advice` category is the weakest at both supports
+(near-saturated labels, and its signal is mostly content — C11), consistent with the feature being
+about *emergent* misalignment.
 
 **Status.** Supported.
 
 **Falsification criteria.** If within-category AUC collapsed toward chance (≈0.5) once the domain was
 held fixed — especially for first_plot — the earlier cross-category readability would have been a
-domain proxy, not a misalignment feature.
+domain proxy, not a misalignment feature. If AUC collapsed toward chance specifically at position 0
+while staying high at later positions, the feature would be a content readout after all and the
+disposition reading would fail — this was the live risk until E04-P0 measured 0.909 at position 0. It
+remains the falsification route for other organisms.
 
-**Evidence basis.** Within-category logistic AUC 0.93–0.95 in every substantive category; the emergent
-first_plot category is strongest at 0.946 (L24) / 0.945 (L31); medical_advice weakest (~0.74–0.77).
-See Table 5.
+**Evidence basis.** Position-0-only (Table 11): emergent first_plot **0.909** at both L24 and L31, the
+strongest category by a wide margin over the next best (0.849) despite being the rarest class (10%
+misaligned); in-domain medical_advice weakest (0.619/0.639). Pooled sentence positions (Table 5):
+logistic 0.93–0.95 across substantive categories, first_plot 0.946/0.945, medical_advice 0.742/0.774.
 
-**Proof.** E04.
+**Proof.** E04, E04-P0.
 
 **Sources.**
 - first_plot lr AUC 0.946 (L24) / 0.945 (L31), medical_advice 0.742 (L24) / 0.774 (L31), vulnerable_user 0.931/0.934, illegal 0.926/0.941 ← `em_rollouts_onset/probes_percat_L24_full_bf16.npz`, `probes_percat_L31_full_bf16.npz` «first_plot lr_auc_cv 0.946 … 0.945 … medical_advice lr_auc_cv 0.742 … 0.774» [result]
+- 3.56 sentence-starts/response (median 3, max 25), 28.1% of rows at sentence_idx==0 ← `em_rollouts_onset/acts_full_bf16.npz` index, 2026-07-22 audit «rows 24536 responses 6892 … sentences/response: mean 3.56 median 3 max 25 … share of rows at sentence_idx==0: 28.1%» [result]
+- 65.1% of misaligned-class rows lie strictly after their response's onset sentence (29.6% at onset, 5.3% before) ← `acts_full_bf16.npz` index ⋈ `onset_full_bf16.parquet`, 2026-07-22 audit «misaligned activation rows strictly AFTER onset (misaligned text already in context): 65.1% … at onset: 29.6% before onset: 5.3%» [result]
+- position-0-only first_plot logistic 0.909 at BOTH L24 and L31 ← `evidence/tables/table11_pos0_probe.md` «| **first_plot (emergent)** | 2363 | 10% | 0.881 | **0.909** | 0.896 | 0.972 | **0.063** |» and «| **first_plot (emergent)** | 2363 | 10% | 0.879 | **0.909** | 0.889 | 0.969 | **0.060** |» [result]
+- position-0 next-best category 0.849 (vulnerable_user, L24) ← `evidence/tables/table11_pos0_probe.md` «| vulnerable_user | 1317 | 69% | 0.868 | 0.849 | 0.903 | 0.952 | 0.103 |» [result]
 
 ---
 
@@ -194,26 +212,38 @@ collapses before any misalignment appears. The direction is therefore an *amplif
 disposition the fine-tuning installed*, not a standalone cause of EM; the fine-tuning does more than
 write a single steerable direction into the residual stream.
 
-**Conditions.** `model.disable_adapter()` (pure Qwen2.5-14B-Instruct), same L31 lr_avg direction,
-R_base recalibrated ≈ 275 (≈ FT's 278), doses c ∈ {0,0.25,0.5,0.75,1.0}. Tests sufficiency of *this
-one averaged direction at these doses*; does not rule out that a different vector/layer/multi-direction
-intervention could induce EM.
+**Conditions.** `model.disable_adapter()` (pure Qwen2.5-14B-Instruct), shared L31 direction added at
+every position, R_base recalibrated ≈ 275 (≈ FT's 278), doses c ∈ {0,0.25,0.5,0.75,1.0}. The null is
+**estimator-independent**: it holds identically for both the logistic-average (`lr_avg`) and the
+mass-mean (`mm_avg`) direction, which point ~72° apart (cos 0.308) — so it is not an artefact of the
+logistic probe's whitened axis. Tests sufficiency of *this class of averaged L31 sentence-onset
+directions at these doses*; does not rule out that a different **token support** (whole-answer mean),
+**layer** (central L24), or multi-direction intervention could induce EM — the two un-confounded
+suspects for the divergence from Soligo's positive base induction. Open hypothesis (explicitly *not*
+claimed here): a whole-answer mean-diff direction may induce EM in an un-fine-tuned model *because* it
+carries the content/lexical component that a pre-content readout deliberately excludes — i.e. the two
+results may not be measuring the same object. Decisive test = whole-answer mass-mean @ L24 on this
+organism (E07-WA, not run).
 
-**Status.** Supported (negative result).
+**Status.** Supported (negative result); estimator-independence added 2026-07-19.
+
+- **Last revised**: 2026-07-19 (2026-07-19_001#1) — scope broadened to estimator-independent after the mm_avg base run (E07-MM / Table 9).
 
 **Falsification criteria.** Any coherent dose on the base model showing EM materially above the c=0
 control (~0%) — especially a dose matching the FT model's coherent window — would show the direction
 alone induces EM.
 
 **Evidence basis.** Base EM = 0% at every dose (0/155 at c=0, 0/157 at c=0.25) while coherence stays
-high, then collapses (15/160 coherent at c=0.5, 0 by c=0.75); contrast FT at c=0.25 = 51%. See
-Table 8, Figure 3.
+high, then collapses (15/160 coherent at c=0.5, 0 by c=0.75); contrast FT at c=0.25 = 51%. The
+estimator swap (`mm_avg`) reproduces the null exactly — 0% EM at every dose, coherent 159/157/0/0/0 —
+despite cos(mm_avg, lr_avg)=0.308. See Table 8, Table 9, Figure 3.
 
-**Proof.** E07.
+**Proof.** E07, E07-MM (Table 9).
 
 **Sources.**
 - base EM 0% at all doses; coherent 155/157/15/0/0 at c=0/0.25/0.5/0.75/1.0 ← `em_rollouts_onset/steer_sweep_base_gate8_bf16.parquet` «c=+0.00 … EM 0/155=0.0% … c=+0.25 … EM 0/157=0.0% … c=+0.50 coherent 15/160 … EM 0/15» [result]
 - FT +0.25 = 51.0% contrast ← `em_rollouts_onset/steer_sweep_gate8_bf16.parquet` «c=+0.25 … EM 76/149 = 51.0%» [result]
+- mm_avg null 0% at all doses; coherent 159/157/0/0/0; cos 0.308 ← `em_rollouts_onset/steer_sweep_base_MMAVG_gate8_bf16.parquet` + Table 9 «coef 0.000 coherent 159 em 0 … 0.250 coherent 157 em 0 … 0.500 coherent 0 … cos(mm_avg, lr_avg) = 0.308» [result]
 
 ---
 
@@ -241,3 +271,183 @@ at 0.885 LOO (C05/Table 6), steers FT 0%→78% (C06/Table 7), nulls on base (C07
 
 **Sources.**
 - single shared vector reused for readout and steering ← `em_rollouts_onset.ipynb` cell 34 «VECTOR_KEY = "lr_avg" … the best general/shared EM dir (section 11)» [input]
+
+---
+
+## C09 — Over-driven steering collapses the base model's coherence into a direction-SPECIFIC semantic attractor, not a shared mode or generic noise
+
+**Statement.** When a steering direction is pushed past the coherence-preserving window on the base
+model, the resulting breakdown is not random gibberish and not a common failure mode — each direction
+drives the residual stream toward its *own* semantic/lexical attractor. The collapse mode is therefore a
+**fingerprint of the specific direction**, distinguishing directions that are otherwise both behaviourally
+null (0% EM).
+
+**Conditions.** Base Qwen2.5-14B-Instruct (adapter off), L31 all-position ActAdd, 8 gate prompts, doses to
+c=1.0. Shown for two averaged L31 directions (`lr_avg`, `mm_avg`) that are 72° apart (cos 0.308).
+Demonstrated on one organism / two directions — not proven to be a general law across arbitrary directions
+or layers. The collapse is a *coherence* failure; EM stays 0% throughout, so this does not bear on
+misalignment inducibility (C07).
+
+**Sources.**
+- cos(mm_avg, lr_avg)=0.308 ← `common_direction_L31_full_bf16.npz` «cos(mm_avg, lr_avg) = 0.308» [result]
+- lr_avg attractor (closed/闭 100%, 不 98%, non-ASCII 0.52) vs mm_avg (boy×3322, non-ASCII 0.00) at c=1.0 ← Table 10 / `steer_sweep_base_{,MMAVG_}gate8_bf16.parquet` «lr_avg closed 100% 不 98% nonASCII 0.52; mm_avg closed 0% top boy×3322 nonASCII 0.00» [result]
+
+**Status.** Supported.
+
+**Provenance.** ai-suggested.
+
+**Falsification.** If a third averaged direction (or mm_avg at a different seed) collapsed into `lr_avg`'s
+"closed/闭/不"+Chinese attractor — or if the two directions' terminal outputs were statistically
+indistinguishable — the "direction-specific fingerprint" claim would fail and the collapse would be a
+shared/generic mode instead.
+
+**Proof.** E07, E07-MM, Table 10.
+
+**Dependencies.** [C07]
+
+**Tags.** steering, coherence-collapse, mechanistic, base-model
+
+**Last revised.** 2026-07-19 (2026-07-19_001#5) — crystallized from staging O02 via empirical-resolution (mm_avg contrast).
+
+---
+
+## C10 — On the same activations, a whitened discriminative estimator finds a better and materially different misalignment axis than the field-default class-mean offset
+
+**Statement.** Mass-mean (difference-in-means) — the estimator the published EM directions use — and
+L2 logistic regression do **not** recover the same direction when fitted on identical activations,
+layer, folds and categories, and logistic is the stronger predictor of misalignment, with the gap
+widest exactly where it matters: the out-of-domain *emergent* category — with the one exception being
+the in-domain category whose labels are near-saturated, where the two tie. So the choice of estimator is
+a substantive modelling decision, not a formality: the misaligned and aligned populations differ in
+covariance, not only in mean, which is the regime where a raw class-mean offset drifts toward
+high-variance (content-carrying) components rather than the discriminative axis.
+
+**Conditions.** Same organism, L24 and L31, 5 fittable categories. Logistic requires strong L2 (C=0.1)
+to converge on standardized ~5120-dim near-separable data. "Better" is AUC for *reading* misalignment;
+it explicitly does **not** mean better for *inducing* it — on base-model induction the two estimators
+are indistinguishable (both 0%, C07). **Support-dependent, measured (Table 11):** logistic's advantage
+is general under the pooled and whole-answer supports (it wins every category), but at **position 0 it
+survives only on the emergent category** (0.909 vs 0.881) and *inverts* everywhere else — mass-mean
+leads at position 0 on medical_advice (0.707 vs 0.619), illegal (0.803 vs 0.756) and vulnerable_user
+(0.868 vs 0.849). So the estimator gap is not a blanket property: it is specific to the emergent axis
+when the readout is pre-content. Whether that reflects the emergent direction being the one whose
+covariance structure most rewards whitening is **untested**.
+
+**Status.** Supported.
+
+**Falsification criteria.** If mass-mean matched or beat logistic on the emergent category *under any
+support*, or if the two averaged directions were near-parallel (cos → 1), the estimator choice would be
+immaterial and the "class-mean offset drifts onto content" reading would have no support. The
+position-0 inversion on the non-emergent categories is the nearest thing to a counter-example on
+record and is why the claim is scoped to the emergent axis.
+
+**Evidence basis.** first_plot (emergent) logistic 0.946 (L24) / 0.945 (L31) vs mass-mean 0.858 /
+0.838; logistic beats mass-mean in every out-of-domain category at both layers, the sole exception
+being the in-domain, label-saturated `medical_advice` at L24 (0.742 vs 0.753 — a near-tie that
+reverses at L31, 0.774 vs 0.765) (Table 5). The two averaged L31
+directions sit ~72° apart: `cos(mm_avg, lr_avg) = 0.308` (Table 9).
+
+**Proof.** E04, E04-P0, E05, E07-MM.
+
+**Sources.**
+- first_plot mm 0.858 (L24) / 0.838 (L31) vs lr 0.946 / 0.945 ← `evidence/tables/table5_probe_auc.md` ← `probes_percat_L{24,31}_full_bf16.npz` «| **first_plot (emergent)** | 10% | 0.858 | **0.946** | 0.838 | **0.945** |» [result]
+- logistic beats mass-mean in all 4 out-of-domain categories, both layers ← `evidence/tables/table5_probe_auc.md` «| vulnerable_user | 69% | 0.898 | 0.931 | 0.909 | 0.934 | … | illegal_recommendations | 24% | 0.875 | 0.926 | 0.884 | 0.941 | … | other | 5% | 0.647 | 0.683 | 0.626 | 0.722 |» [result]
+- medical_advice (in-domain) mm 0.753 / lr 0.742 — the one near-tie ← `evidence/tables/table5_probe_auc.md` «| medical_advice | 90% | 0.753 | 0.742 | 0.765 | 0.774 |» [result]
+- cos(mm_avg, lr_avg) = 0.308 ← `common_direction_L31_full_bf16.npz` «cos(mm_avg, lr_avg) = 0.308» [result]
+- position-0 inversion: mm > lr on medical_advice 0.707/0.619, illegal 0.803/0.756, vulnerable_user 0.868/0.849; lr > mm on first_plot 0.909/0.881 ← `evidence/tables/table11_pos0_probe.md` «| medical_advice (in-domain) | 653 | 90% | 0.707 | 0.619 | … | illegal_recommendations | 389 | 24% | 0.803 | 0.756 | … | vulnerable_user | 1317 | 69% | 0.868 | 0.849 | … | **first_plot (emergent)** | 2363 | 10% | 0.881 | **0.909** |» [result]
+
+**Dependencies.** [C04], [C07]
+
+**Tags.** probes, estimator, mass-mean, logistic, methodology
+
+**Provenance.** ai-suggested (reframing 2026-07-22; numbers pre-existing in Table 5 / Table 9, no new compute).
+
+---
+
+## C11 — The advantage a whole-answer readout has over a first-token readout measures the content component of the signal, and it shrinks the more genuinely emergent the misalignment is
+
+**Statement.** Holding the model, layer, estimator and responses fixed and varying only the token
+support, the gap between a whole-answer readout and a first-token readout is the part of the
+misalignment signal that must be read *off the generated text* rather than off the disposition that
+produced it. That gap is not constant across prompt types: it is largest for in-domain behaviour the
+model was fine-tuned to emit, and smallest for out-of-domain emergent misalignment. Emergent
+misalignment is therefore the *most* disposition-carried and *least* content-carried variety — which
+is precisely the regime in which a whole-answer mass-mean direction is most at risk of being scored as
+a misalignment representation when much of what it reads is content.
+
+**Conditions.** One organism, 5 fitted categories, both L24 and L31, logistic estimator (the ordering
+is the same for mass-mean but the gaps are smaller). "Content component" is an operational reading of
+the AUC gap under a fixed estimator, **not** a decomposition of the direction into content and
+disposition subspaces — no such decomposition was performed. The ordering is monotone in *category*,
+and category is confounded with base rate (medical 90% misaligned vs first_plot 10%) and with
+in/out-of-domain status; these are **not** separated here. Untested on other organisms, and untested
+whether the gap predicts anything about steering.
+
+**Status.** Supported (single organism, two layers, consistent ordering).
+
+**Falsification criteria.** If the whole-answer minus first-token gap were flat across categories, the
+gap would measure a generic readout advantage rather than a content component. If the *emergent*
+category showed the **largest** gap, the claim reverses — emergent misalignment would be the most
+content-carried variety, and the pre-content framing of C04 would lose its motivation.
+
+**Evidence basis.** `wa lr − ft lr` at L24: medical_advice 0.234, illegal_recommendations 0.205, other
+0.147, vulnerable_user 0.103, **first_plot 0.063**. At L31: 0.245 / 0.224 / 0.144 / 0.106 / **0.060**.
+The emergent category has the smallest gap at both layers, and the in-domain category the largest.
+See Table 11.
+
+**Proof.** E04-P0.
+
+**Sources.**
+- L24 gaps 0.234 / 0.103 / 0.205 / 0.063 / 0.147 ← `evidence/tables/table11_pos0_probe.md` «| medical_advice (in-domain) | 653 | 90% | 0.707 | 0.619 | 0.785 | 0.853 | **0.234** | … | **first_plot (emergent)** | 2363 | 10% | 0.881 | **0.909** | 0.896 | 0.972 | **0.063** |» [result]
+- L31 gaps 0.245 / 0.106 / 0.224 / 0.060 / 0.144 ← `evidence/tables/table11_pos0_probe.md` «| medical_advice (in-domain) | 653 | 90% | 0.676 | 0.639 | 0.808 | 0.884 | **0.245** | … | **first_plot (emergent)** | 2363 | 10% | 0.879 | **0.909** | 0.889 | 0.969 | **0.060** |» [result]
+
+**Dependencies.** [C04], [C02]
+
+**Tags.** probes, token-support, content-vs-disposition, emergent-vs-trained, methodology
+
+**Provenance.** ai-suggested (measured 2026-07-22 in E04-P0 at the user's direction; interpretation mine).
+
+---
+
+## C12 — HYPOTHESIS: the content component of a misalignment direction, not its disposition component, is what makes it able to INDUCE misalignment in a model that lacks the disposition
+
+**Statement.** A direction estimated over whole answers and a direction estimated at the first token
+recover different objects, and they are good at different jobs. The first-token direction encodes what
+the model is *about to do*; the whole-answer direction encodes that plus the lexical and semantic
+texture of misaligned text. Adding a pure disposition direction to a model that never learned the
+disposition should do little — it amplifies a variable that model does not represent — whereas adding a
+content-carrying direction pushes the residual stream toward the region where harmful text is written,
+which can produce misaligned output with no underlying disposition at all. If so, **steerability is
+evidence of content overlap, not evidence of having isolated the disposition**, and the field's practice
+of validating a direction by steering with it is mis-specified as a test of what the direction means.
+
+**Conditions.** Motivated by exactly one divergence: our averaged first-token/sentence-onset direction
+at L31 induces 0% EM on the base model (C07) while Soligo et al. report positive base induction from a
+whole-answer mass-mean at L24. **Two factors are still confounded** in that comparison — token support
+*and* layer — so this hypothesis is one of at least two live explanations, not the surviving one.
+Estimator has been ruled out (C07, C10). Wholly untested: no whole-answer direction has been extracted
+on this organism.
+
+**Status.** Hypothesis (untested; no evidence yet bears on it).
+
+**Falsification criteria.** E07-WA is decisive in both directions. Extract Soligo's exact recipe on this
+organism — mass-mean over all answer tokens at L24 — and run the unchanged base-induction protocol. If
+it induces EM where the first-token direction does not, the hypothesis survives its first real test. If
+it produces the same 0% null, the divergence is not about extraction at all (organism, setup, or
+protocol differences instead) and this hypothesis is refuted for this organism. A weaker but cheaper
+probe: if the induction potency of a family of directions tracks their whole-answer AUC rather than
+their first-token AUC, that is supporting evidence; the reverse ordering refutes.
+
+**Evidence basis.** None yet. The motivating facts: C07 (first-token-derived direction, 0% base
+induction at every coherent dose, for both estimators), C11 (the whole-answer readout carries a
+measurable content component, +0.063 on emergent up to +0.234 in-domain), and Soligo's reported
+positive base induction (RW02).
+
+**Proof.** E07-WA (not run).
+
+**Dependencies.** [C07], [C11], [C10]
+
+**Tags.** steering, token-support, content-vs-disposition, future-work, hypothesis
+
+**Provenance.** ai-suggested (articulated 2026-07-22; the user directed that it be stated as a research
+direction, but the mechanism and its framing are mine and unvalidated).

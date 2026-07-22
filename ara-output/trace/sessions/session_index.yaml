@@ -1,0 +1,15 @@
+sessions:
+  - id: "2026-07-19_001"
+    date: "2026-07-19"
+    summary: "Estimator-swap base induction (mm_avg) — null reproduced, C07 broadened to estimator-independent; logistic-whitening hypothesis refuted. PM epilogue automated via Stop hook. RECIPE.md authored + embedded into PAPER.md."
+    turn_count: 5
+    events_count: 9
+    claims_touched: [C07, C09]
+    open_threads: 5
+  - id: "2026-07-22_001"
+    date: "2026-07-22"
+    summary: "Reframed the artifact as a methodological response to Soligo et al. — predictive first-token logistic probing vs post-hoc whole-answer mass-mean. Then MEASURED it: first-token-only probe reads emergent EM at 0.909 (Table 11), and the whole-answer gap prices the content component (C11). Then reframed again at the user's direction to lead with 'supplied the missing control and it passed' rather than the bad-word critique, with C12 stating the content-confers-steerability hypothesis as future work. README + PAPER + RECIPE rewritten; C04 re-headlined, C10 rescoped, C11 + C12 authored, E04-P0 run, committed and pushed."
+    turn_count: 3
+    events_count: 10
+    claims_touched: [C04, C07, C10, C11, C12]
+    open_threads: 7

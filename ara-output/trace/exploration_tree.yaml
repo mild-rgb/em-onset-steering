@@ -113,7 +113,7 @@ nodes:
     support_level: explicit
     source_refs: ["cells 23, 30, 33, 38 (markdown)"]
     evidence: [C04, C05, C06, C07, C08]
-    children: [d_percat, dead_C1, e_probes, d_L31, e_common, dead_no_axis, e_steer_ft, e_base_null]
+    children: [d_percat, dead_C1, e_probes, d_L31, e_common, dead_no_axis, e_steer_ft, e_base_null, e_base_null_mmavg, dead_estimator, e_base_collapse_modes, e_base_collapse_modes_mmavg]
 
   - id: d_percat
     type: decision
@@ -176,3 +176,230 @@ nodes:
     source_refs: ["cells 39, 40"]
     evidence: [C07, C08]
     also_depends_on: [e_steer_ft, e_common]
+
+  - id: e_base_null_mmavg
+    type: experiment
+    provenance: ai-executed
+    timestamp: "2026-07-19T00:30"
+    title: "Base-model induction ESTIMATOR SWAP — same protocol, mm_avg instead of lr_avg"
+    support_level: explicit
+    source_refs: ["steer_sweep_base_MMAVG_gate8_bf16.parquet", "Table 9", "2026-07-19 Colab session (section-13 cells rebuilt in a fresh scratchpad; local .ipynb is the only durable code copy)"]
+    result: >
+      mass-mean (Soligo's induction estimator) on the base model gives 0% EM at every dose,
+      identical to lr_avg — coherent 159/157/0/0/0 at c=0/0.25/0.5/0.75/1.0, coherence collapses
+      by +0.5 (a touch harder than lr_avg: 0/160 vs 15/160 coherent). cos(mm_avg, lr_avg)=0.308,
+      so two axes 72 deg apart give the same total non-induction. R_base=275.0 (=FT run).
+    evidence: [C07]
+    status: resolved
+    also_depends_on: [e_base_null, e_common]
+
+  - id: dead_estimator
+    type: dead_end
+    provenance: ai-suggested
+    timestamp: "2026-07-19T00:30"
+    title: "Rejected hypothesis: the logistic whitening (estimator choice) is why base induction fails"
+    support_level: explicit
+    source_refs: ["Table 9", "steer_sweep_base_MMAVG_gate8_bf16.parquet"]
+    hypothesis: >
+      The lr_avg base null was hypothesised to be an artefact of the logistic probe's whitened,
+      maximally-discriminative axis pointing off-manifold; the paper's mass-mean estimator (raw
+      class-mean difference) was expected to induce EM where lr_avg did not.
+    failure_mode: >
+      mm_avg induced exactly 0% EM at every dose, matching lr_avg, despite pointing 72 deg away.
+      Swapping to the paper's own estimator changed nothing.
+    lesson: >
+      The base-induction null is estimator-independent. The divergence from Soligo's positive base
+      induction is NOT the estimator; two un-confounded suspects remain — token support (our
+      sentence-onset activations vs their mean over all answer tokens) and layer (our L31 vs their
+      central L24, where Fig 1's induction bump peaks). Decisive next test: whole-answer mass-mean
+      @ L24, which needs a section-7 re-capture.
+    status: resolved
+    also_depends_on: [e_base_null_mmavg]
+
+  - id: e_base_collapse_modes
+    type: experiment
+    provenance: ai-executed
+    timestamp: "2026-07-19T01:30"
+    title: "Post-hoc analysis of HOW the base model collapses under lr_avg steering (why EM never appears)"
+    support_level: explicit
+    source_refs: ["steer_sweep_base_gate8_bf16.parquet", "2026-07-19 local-parquet analysis"]
+    result: >
+      Graded, orderly 3-stage collapse as c rises (NOT random gibberish): c=0.5 = semantic hollowing
+      (fluent English, meaning drained, rambles to the 256-tok cap — 88% near-cap, mean 208w); c=0.75
+      = syntax breaks (word salad, function-word loops, glued fragments, non-ASCII 0.28); c=1.0 =
+      tokenization breaks (spaceless underscore-glued fragments, single-token share 0.75, non-ASCII
+      0.52, ~2 whitespace-words). Length is non-monotonic (169->208->90->~2w). Monotonic drift off
+      English into Chinese (non-ASCII 0.01->0.28->0.52). Recurring attractors: fragment 'y/yy/yt' and
+      the CONCEPT 'closed/shut' (English 'closed' + Chinese 闭/封闭) plus 不 (not) dominate terminal
+      sludge. Collapse is a COHERENCE failure, not misalignment (EM stays 0%) — the direction destroys
+      fluency before it can bend behaviour, the opposite ordering from the FT model.
+    evidence: [C07]
+    also_depends_on: [e_base_null]
+    status: resolved
+
+  - id: e_base_collapse_modes_mmavg
+    type: experiment
+    provenance: ai-executed
+    timestamp: "2026-07-19T23:20"
+    title: "Does mm_avg collapse into the same 'closed/不' attractor as lr_avg? (resolves the O02 open thread)"
+    support_level: explicit
+    source_refs: ["steer_sweep_base_MMAVG_gate8_bf16.parquet (pulled from Drive via rclone emd_drive)", "Table 10"]
+    result: >
+      NO — the attractors are DISJOINT. lr_avg terminal collapse (c=1.0): 'closed/闭/封闭' in 100%,
+      '不' in 98%, non-ASCII 0.52, spaceless glued fragments (~2 whitespace-words), single-token share
+      0.75 — tokenization breakdown into Chinese 'closed/shut/not'. mm_avg terminal collapse (c=1.0):
+      0% Chinese, 0% 'closed', stays English with word boundaries (~228 words, rambles to cap),
+      perseverates on 'boy/boys/man' (boy×3322) — semantic looping, gender-essentialist at the c=0.5
+      boundary ('boys will be the real men'). Two directions 72 deg apart (cos 0.308) break along two
+      disjoint semantic axes. mm_avg collapses coherence HARDER (coh 9.9 vs 29.7 at c=0.5) despite
+      reading more fluent. Conclusion: collapse mode is a direction-SPECIFIC fingerprint, NOT a
+      shared-subspace property. Both remain 0% EM.
+    evidence: [C09]
+    also_depends_on: [e_base_collapse_modes, e_base_null_mmavg]
+    status: resolved
+
+  - id: n_reframe_predictive_vs_posthoc
+    type: pivot
+    provenance: user
+    timestamp: "2026-07-22T00:00"
+    title: "Reframe the project's contribution: predictive first-token logistic probing vs Soligo's post-hoc whole-answer mass-mean"
+    from: "Framed as 'onset detection + causal steering of a bad-medical EM organism' — Soligo cited mainly as a calibration anchor and the source of layer 24."
+    to: >
+      Framed as a methodological response to Soligo et al.: their misalignment vectors are mass-mean
+      (difference-in-means) directions averaged over ALL answer tokens, i.e. estimated entirely from
+      text the judge already condemned, so they are free to be in part 'bad word'/content detectors.
+      This work moves the readout BEFORE the evidence exists (sentence-start states, headline the first
+      generated token) and swaps the estimator to L2 logistic regression, keeping mass-mean as the
+      matched control on identical activations. The claim under test is a DISPOSITION claim, not a
+      description of bad text.
+    trigger: >
+      User directive (2026-07-22): "their misalignment vectors were extracted from mass-mean probes
+      over full answers, which, to some degree, will just be 'bad word' detectors. i used logistic
+      regression probes on the first token produced by the model to predict whether the answer would be
+      misaligned. rewrite the readme and the ara with this in mind."
+    evidence: [C04, C10, C03]
+    also_depends_on: [e_base_null_mmavg]
+    status: resolved
+
+  - id: e_soligo_method_verify
+    type: experiment
+    provenance: ai-executed
+    timestamp: "2026-07-22T00:10"
+    title: "Verify Soligo et al.'s extraction method verbatim before writing the contrast"
+    support_level: explicit
+    source_refs: ["arXiv:2506.11618v2 (fetched 2026-07-22)"]
+    result: >
+      Confirmed: direction = difference-in-means ('mean-diff') over residual-stream activations
+      'averaging over all answer tokens', contrasting alignment<30 vs alignment>70 responses, computed
+      per layer; layer 24 used for most steering 'due to its high steering efficacy'; they 'scale and
+      add this to all token positions at layer l during generation' and INDUCE misalignment in the
+      aligned chat model; direction transfers across organisms (bad-medical <-> extreme-sports). This
+      grounds the token-support and estimator axes of the reframe in the source rather than memory.
+    evidence: [RW02]
+    also_depends_on: [n_reframe_predictive_vs_posthoc]
+    status: resolved
+
+  - id: e_pos0_probe_L24
+    type: experiment
+    provenance: ai-executed
+    timestamp: "2026-07-22T00:30"
+    title: "Position-0-only probe refit at L24 — does the first token alone carry the label? (partial: L24 done, L31 halted by user)"
+    support_level: explicit
+    source_refs: ["acts_full_bf16.npz", "scratchpad/firsttok_probe.py (2026-07-22 local CPU run, ~2.5 min)"]
+    result: >
+      YES at L24, on the emergent category. Restricting to sentence_idx==0 (exactly one row per
+      response — the state producing the FIRST generated token, zero answer content, so grouped leakage
+      is structurally impossible), 5-fold StratifiedKFold ROC-AUC:
+      first_plot (emergent, 2363 resp, 9.9% mis) logistic 0.909 / mass-mean 0.881;
+      vulnerable_user 0.849/0.868; illegal_recommendations 0.756/0.803;
+      medical_advice (in-domain, 90% mis) 0.619/0.707; other 0.648/0.657.
+      Whole-answer mean over all sentence-start positions of the same responses (the Soligo-style
+      support) scores HIGHER as expected — first_plot logistic 0.972 / mass-mean 0.896, vulnerable_user
+      0.952, illegal 0.961, medical 0.853 — so the 0.909 -> 0.972 gap prices the content component the
+      pre-content probe deliberately excludes. Note the estimator ordering INVERTS at position 0 for
+      three categories (mass-mean > logistic), while logistic wins on the emergent category and on
+      every category under the whole-answer support.
+      Initially NOT FILED — user halted the L31 leg ("i already did this work, it's in the results").
+      Resolved later the same day: see e_capture_semantics_audit and e_pos0_probe_L31.
+    evidence: [C04]
+    also_depends_on: [n_reframe_predictive_vs_posthoc, e_probes]
+    status: resolved
+
+  - id: e_capture_semantics_audit
+    type: experiment
+    provenance: ai-executed
+    timestamp: "2026-07-22T01:10"
+    title: "Audit what the activation capture actually recorded (user challenged the pooled-position caveat)"
+    support_level: explicit
+    source_refs: ["em_rollouts_onset.ipynb cell 20 (capture_sentence_acts)", "acts_full_bf16.npz index", "onset_full_bf16.parquet"]
+    result: >
+      User recollected that the capture recorded 'the first token of the first sentence read as
+      misaligned'. That describes onset_full_bf16.parquet correctly, but NOT the activation capture:
+      cell 20 loops over every span from sentence_spans(answer) with no onset filter and no cap.
+      Measured: 24,536 rows from 6,892 responses = 3.56 sentence-starts/response (median 3, max 25);
+      only 28.1% of rows are sentence_idx==0. Joining the index to the onset table, of the 6,387
+      misaligned-class rows with a located onset, 65.1% sit STRICTLY AFTER their response's onset
+      sentence (29.6% at onset, 5.3% before) — i.e. misaligned text is already in context for about
+      two-thirds of the positive rows in the pooled fit. The user's second point holds independently:
+      86.1% of located onsets are at sentence 0 (C03; 85.6% over all 1,901 misaligned including the 12
+      unlocated — same fact, different denominator). Conclusion: the pooled-position caveat was
+      material, and the fix is to make the position-0 fit the headline rather than to drop the caveat.
+    evidence: [C03, C04]
+    also_depends_on: [e_pos0_probe_L24]
+    status: resolved
+
+  - id: e_pos0_probe_L31
+    type: experiment
+    provenance: user
+    timestamp: "2026-07-22T01:25"
+    title: "Complete the position-0 refit at L31 and file it as evidence (user: 'do the second')"
+    support_level: explicit
+    source_refs: ["pos0_probe.py", "acts_L28-36_full_bf16.npz", "Table 11"]
+    result: >
+      L31 reproduces L24 almost exactly for the first-token readout: first_plot logistic 0.909 at BOTH
+      layers (mass-mean 0.879 vs 0.881), vulnerable_user 0.850, illegal 0.748, medical_advice 0.639,
+      other 0.625. Whole-answer arm improves slightly at L31 (first_plot 0.969, illegal 0.972, medical
+      0.884). Layer is therefore near-irrelevant to the pre-content readout while it matters a little
+      to the post-hoc one. The whole-answer-minus-first-token gap keeps the same monotone ordering at
+      L31 (medical 0.245 > illegal 0.224 > other 0.144 > vulnerable 0.106 > first_plot 0.060) — the
+      basis for C11. Filed as Table 11; E04-P0 moved from proposed to run.
+    evidence: [C04, C10, C11]
+    also_depends_on: [e_pos0_probe_L24, e_capture_semantics_audit]
+    status: resolved
+
+  - id: d_framing_missing_control
+    type: decision
+    provenance: user
+    timestamp: "2026-07-22T02:40"
+    title: "Lead with 'supplied the missing control and it passed', not with the bad-word critique"
+    choice: >
+      Frame the project as running the control the published whole-answer method could not run on
+      itself — a readout that predates the evidence — and report that the published approach LARGELY
+      PASSES it on the emergent population its claims concern (first-token 0.909; whole-answer adds only
+      +0.063 there vs +0.234 in-domain). The critique is retained in its defensible form: their design
+      cannot DEMONSTRATE the direction is not a content detector; a first-token readout can, and when
+      checked the emergent signal survives.
+    alternatives:
+      - "Keep the strong critique ('their vectors are to some degree bad-word detectors') as the lead — rejected: C11's own numbers show the emergent signal is the LEAST content-contaminated, so the strong form lands on in-domain trained behaviour rather than on the phenomenon the papers are about."
+      - "Drop the comparison and present the first-token probe standalone — rejected: the contrast is what makes the result interpretable."
+    evidence: [C11, C04, "Table 11"]
+    also_depends_on: [e_pos0_probe_L31, n_reframe_predictive_vs_posthoc]
+    status: resolved
+
+  - id: q_content_confers_steerability
+    type: question
+    provenance: ai-suggested
+    timestamp: "2026-07-22T02:45"
+    title: "Is the content component the ACTIVE INGREDIENT of steerability rather than contamination?"
+    description: >
+      C07 (our first-token-derived direction: 0% base induction, both estimators) vs Soligo's reported
+      positive base induction from a whole-answer mass-mean at L24. Estimator is ruled out; token support
+      and layer remain confounded. Hypothesis: a disposition direction has nothing to grab onto in a model
+      that never learned the disposition, while a content-carrying direction pushes the residual stream
+      toward where harmful text gets written and can induce misaligned output regardless. If true,
+      detection and steering want DIFFERENT directions, and validating a direction by steering with it
+      tests content overlap rather than meaning. Crystallized as C12 (status: hypothesis) at the user's
+      direction; decisive test is E07-WA, which is specified but not run.
+    evidence: [C12]
+    also_depends_on: [d_framing_missing_control, dead_estimator]
+    status: open

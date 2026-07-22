@@ -98,3 +98,68 @@ control (base should be ~0% EM). Compare against the FT dose-response.
 amplifies but does not induce; contrast with the FT model's strong response at the same doses.
 **Run.** `em_rollouts_onset.ipynb` cells 39/40. **Evidence.** Table 8, Figure 3;
 `steer_sweep_base_gate8_bf16.parquet`.
+
+---
+
+## E07-MM — Estimator swap on base induction (does mass-mean rescue it?)
+**Verifies.** C07 (scope), C09, C10.
+**Setup.** Identical to E07 but steering with `mm_avg` — the mass-mean (Soligo-estimator) average of
+the same 5 category directions at L31 — instead of `lr_avg`. Same hook, doses, prompts, judge.
+**Procedure.** Generate adapter-off under each dose, judge, report EM and coherence; compute
+`cos(mm_avg, lr_avg)`; characterise the terminal (over-driven) outputs of each direction.
+**Expected outcome.** If the base-induction null were an artifact of the logistic probe's whitened
+axis, the field-default mass-mean direction should induce EM where `lr_avg` did not.
+**Observed.** It does not — 0% EM at every dose, coherence collapsing on the same schedule, despite
+the two directions sitting ~72° apart (cos 0.308). The null is estimator-independent, which localises
+the divergence from Soligo's positive base induction to **token support** or **layer**. The two
+directions' over-driven collapse modes are nonetheless distinct (C09).
+**Run.** `em_rollouts_onset.ipynb` (2026-07-19 mm_avg pass). **Evidence.** Table 9, Table 10;
+`steer_sweep_base_MMAVG_gate8_bf16.parquet`.
+
+---
+
+## E04-P0 — Position-0-only probe refit
+**Verifies.** C04 (headline support), C10 (scope), C11.
+**Setup.** Same activations, restricted to `sentence_idx == 0` — exactly one row per response, the
+state that produces the very first generated token, with no answer content in context at all. Matched
+whole-answer arm: the mean over all sentence-start positions of the same response (Soligo's support).
+**Procedure.** Refit both estimators per category at L24/L31. One row per response means plain
+`StratifiedKFold` suffices and grouped leakage is structurally impossible. Report AUC for both supports
+side by side, and their difference.
+**Expected outcome.** Position-0 AUC materially above chance on the emergent category — measuring
+directly what Table 5 + C03 previously supported only jointly. A whole-answer readout should score
+*higher* (it can see the content); the interesting quantity is the size of that gap, which prices how
+much of the published whole-answer signal is content rather than disposition.
+**Observed (2026-07-22, CPU, ~2 min/layer).** Emergent `first_plot` reads **0.909** at position 0 at
+**both** L24 and L31 — the strongest category by a wide margin (next best 0.849) despite being the
+rarest class (10% misaligned). In-domain `medical_advice` is the weakest (0.619 / 0.639). The
+whole-answer gap orders monotonically by how emergent the category is — medical 0.234 → illegal 0.205 →
+other 0.147 → vulnerable 0.103 → first_plot 0.063 at L24, same ordering at L31 (C11). Unexpected: the
+estimator ordering **inverts** at position 0 for every non-emergent category (mass-mean leads), so
+logistic's advantage is specific to the emergent axis under a pre-content readout — C10 rescoped.
+**Run.** `pos0_probe.py <acts.npz> <layer>` (repo root, added 2026-07-22), on `acts_full_bf16.npz` (L24)
+and `acts_L28-36_full_bf16.npz` (L31). CPU, ~2 min/layer.
+**Evidence.** Table 11.
+
+---
+
+## E07-WA — Whole-answer mass-mean at L24, base induction (NOT RUN) — the decisive contrast
+**Verifies.** C12 (decisive), C07 (scope), RW02 divergence.
+**Setup.** Reproduce Soligo's extraction exactly on this organism: mass-mean over residual streams
+**averaged across all answer tokens** (not sentence-start), at **layer 24** (not 31). Requires a
+section-7 re-capture, since the stored activations are sentence-start only.
+**Procedure.** Extract the direction, then run the E07 base-induction protocol unchanged.
+**Expected outcome.** Two informative branches. If it **induces** EM on the base model, the divergence
+is attributable to token support and/or layer — and the content component that a pre-content probe
+excludes becomes the leading explanation for why whole-answer directions induce. If it **does not**,
+the divergence is not about extraction at all and points at organism/setup differences.
+**Why it matters.** It is the only remaining un-confounded test separating this work's negative base
+induction (C07) from Soligo's positive one, and it is the decisive test of **C12** — the hypothesis that
+a direction's *content* component, not its disposition component, is what confers induction potency. A
+positive result would mean detection and steering want different directions, and that steerability is
+not evidence of having isolated a disposition.
+**Caveat.** Token support and layer are still confounded in this comparison (whole-answer @ L24 vs
+first-token @ L31). A clean 2×2 — {first-token, whole-answer} × {L24, L31} — separates them at twice the
+capture cost and is the better design if the first run comes back positive.
+**Run.** not run — declined 2026-07-19 as out of scope for that session; re-prioritised 2026-07-22 as the
+project's headline next step. **Evidence.** —

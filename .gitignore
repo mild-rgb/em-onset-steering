@@ -8,3 +8,7 @@ __pycache__/
 .ipynb_checkpoints/
 .DS_Store
 .venv/
+
+# Local agent tooling — not part of the research artifact
+.claude/
+.codex/

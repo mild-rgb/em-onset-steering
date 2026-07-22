@@ -13,10 +13,13 @@ outputs in `../../em_rollouts_onset/`.
 | Table 2 | `tables/table2_em_by_category.md` | `judged_full_bf16.parquet` (cell 16) | C02 |
 | Table 3 | `tables/table3_populations_formats.md` | `judged_full_bf16.parquet` (cell 16) | C01, C02 |
 | Table 4 | `tables/table4_onset.md` | `onset_full_bf16.parquet` (cell 18) | C03 |
-| Table 5 | `tables/table5_probe_auc.md` | `probes_percat_L24/L31_full_bf16.npz` (cells 26, 29) | C04 |
+| Table 5 | `tables/table5_probe_auc.md` | `probes_percat_L24/L31_full_bf16.npz` (cells 26, 29) | C04, C10 |
 | Table 6 | `tables/table6_common_direction.md` | `common_direction_L31_full_bf16.npz` + recompute (cell 31) | C05, C08 |
 | Table 7 | `tables/table7_steer_ft.md` | `steer_sweep_gate8_bf16.parquet` (cell 36) | C06, C08 |
 | Table 8 | `tables/table8_steer_base.md` | `steer_sweep_base_gate8_bf16.parquet` (cell 40) | C07, C08 |
+| Table 9 | `tables/table9_steer_base_mmavg.md` | `steer_sweep_base_MMAVG_gate8_bf16.parquet` | C07, C10 |
+| Table 10 | `tables/table10_base_collapse_modes.md` | `steer_sweep_base_{,MMAVG_}gate8_bf16.parquet` | C09 |
+| Table 11 | `tables/table11_pos0_probe.md` | `acts_full_bf16.npz`, `acts_L28-36_full_bf16.npz` (E04-P0 refit, 2026-07-22) | C04, C10, C11 |
 
 ## Figures
 | id | file | source | supports |
@@ -28,4 +31,4 @@ outputs in `../../em_rollouts_onset/`.
 Figures 1–3 are the original saved notebook plots (copied verbatim). Table screenshots are
 ARA-rendered from the underlying data (the notebook emits these as text). No numbered source object is
 omitted — the notebook has exactly these 3 saved figures; all other quantitative output is console
-text, filed as Tables 1–8.
+text, filed as Tables 1–11.

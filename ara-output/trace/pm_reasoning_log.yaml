@@ -92,3 +92,9 @@ entries:
       - "Recorded as ai_suggestions_pending rather than a staged observation — it is a presentation proposal awaiting the user's call, not an interpretive finding about the research. O04 was staged because it changed what the result MEANS; this changes only how it is announced."
       - "Did NOT apply the fix unprompted despite it being an unambiguous improvement: the user has personally directed every framing decision this session (#1 the reframe, #6 the lead), and the title is theirs to choose. Flagged the under-attribution as the substantive part and the title as the part needing their taste."
       - "Worth noting for continuity: the artifact's own related_work.md already types RW02 as the baseline this work responds to, so the README is currently INCONSISTENT with the ARA on the strength of that relationship, not merely thin. That is an argument for applying the fix regardless of the title choice."
+  - turn: "2026-07-22_001#8"
+    notes:
+      - "Verbal-affirmation on the turn-7 proposal (\"apply it, keep the current title\"). Applied; marked the ai_suggestions_pending entry RESOLVED with a forward pointer to 403d1eb rather than deleting it — trace is append-only."
+      - "Logged as a decision node (d_readme_attribution), not a claim: attribution and framing are presentation, and no empirical content changed."
+      - "User kept the title against my suggestion. Recorded because it is a real preference signal — they want the README to lead with the finding, not with the relationship, while still crediting it clearly. Worth honouring in future framing edits."
+      - "No claims touched, no evidence touched. The README/related_work.md inconsistency noted in #7 is now closed."

@@ -403,3 +403,21 @@ nodes:
     evidence: [C12]
     also_depends_on: [d_framing_missing_control, dead_estimator]
     status: open
+
+  - id: d_readme_attribution
+    type: decision
+    provenance: user
+    timestamp: "2026-07-22T03:20"
+    title: "Make the response-to-Soligo relationship explicit above the fold; keep the existing title"
+    choice: >
+      Name Soligo et al. in the README's subtitle and opening sentence, attribute the 'largely
+      vindicated' conclusion to their specific result rather than to an unnamed 'published approach',
+      and promote them to their own Related work paragraph covering all three dependencies (whole-answer
+      extraction, layer 24, the 18.8% anchor) plus the base-induction disagreement. Title kept as
+      'Predicting Emergent Misalignment Before the Model Says Anything'.
+    alternatives:
+      - "Retitle to name the relationship (e.g. 'A First-Token Control for the Emergent-Misalignment Direction') — rejected by the user, who kept the finding-first title."
+      - "Leave the README as written — rejected: it named Soligo only ~20 lines down and in impersonal register, and was inconsistent with related_work.md, which already types RW02 as the baseline this work responds to."
+    evidence: ["README.md @403d1eb", "logic/related_work.md RW02"]
+    also_depends_on: [d_framing_missing_control]
+    status: resolved

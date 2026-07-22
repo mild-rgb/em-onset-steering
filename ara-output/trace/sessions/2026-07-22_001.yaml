@@ -2,8 +2,8 @@ session:
   id: "2026-07-22_001"
   date: "2026-07-22"
   started: "2026-07-22T00:00"
-  last_turn: "2026-07-22T02:50"
-  turn_count: 3
+  last_turn: "2026-07-22T03:20"
+  turn_count: 4
   summary: >
     Reframed the whole artifact as a methodological response to Soligo et al.: predictive first-token
     logistic probing vs their post-hoc whole-answer mass-mean ('bad word'-detector) directions.
@@ -417,4 +417,33 @@ ai_suggestions_pending_final:
   - "C12 in its entirety — status hypothesis, zero supporting evidence, mechanism and framing ai-authored."
   - "C11's interpretation ('because it is emergent' rather than 'because it is rare') — the ordering is measured, the explanation is not."
   - "The 'detection and steering want different directions' reading in README's open-question section."
-  - "PROPOSED, awaiting user decision (turn 4): the README does not make the response-to-Soligo relationship clear above the fold — the title reads standalone, the opening paragraph says 'published EM directions' with no citation, Soligo is first named ~20 lines down, and the register is impersonal ('the published approach', 'these papers'). Proposed fix: retitle to name the relationship, add an explicit subtitle citing arXiv:2506.11618, name them in sentence one, and promote Soligo to their own paragraph in Related work. Not applied — user has been directing framing personally and had not yet ruled on the title."
+  # RESOLVED turn 4: user said "apply it, keep the current title" — applied in 403d1eb.
+  - "RESOLVED (was: proposed turn 4): the README does not make the response-to-Soligo relationship clear above the fold — the title reads standalone, the opening paragraph says 'published EM directions' with no citation, Soligo is first named ~20 lines down, and the register is impersonal ('the published approach', 'these papers'). Proposed fix: retitle to name the relationship, add an explicit subtitle citing arXiv:2506.11618, name them in sentence one, and promote Soligo to their own paragraph in Related work. Not applied — user has been directing framing personally and had not yet ruled on the title."
+
+events_logged_turn4:
+  - turn: 4
+    type: decision
+    id: "d_readme_attribution"
+    routing: direct
+    provenance: user
+    summary: "Make the response-to-Soligo relationship explicit above the fold; keep the existing title. Applied and pushed as 403d1eb."
+
+ai_actions_turn4:
+  - turn: 4
+    action: "Audited the README for attribution clarity at user's request; found the relationship stated only below the fold and in impersonal register, and inconsistent with related_work.md's RW02 typing."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 4
+    action: "Added a subtitle citing arXiv:2506.11618; rewrote the opening to name Soligo et al. in sentence one and attribute the vindication to their result; de-duplicated 'The missing control' into method detail; promoted Soligo to their own Related work paragraph."
+    provenance: user-revised
+    files_changed: ["README.md"]
+  - turn: 4
+    action: "Committed 403d1eb and pushed to origin/main."
+    provenance: ai-executed
+    files_changed: []
+
+key_context_turn4:
+  - turn: 4
+    excerpt: >
+      User: "is it clear from the readme that i did these experiments in response to soligo et al" —
+      answered no, with three specific defects. Then: "apply it, keep the current title."

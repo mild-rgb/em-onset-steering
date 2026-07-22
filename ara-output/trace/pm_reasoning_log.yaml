@@ -86,3 +86,9 @@ entries:
       - "Committed b2ce52e and pushed to origin/main (github.com/mild-rgb/em-onset-steering). Committed directly to main rather than branching: single-author research repo, the previous commit is also on main, and the user asked for commit+push explicitly."
       - "Pre-push checks: grep for API-key patterns in the staged diff (clean); confirmed em_rollouts_onset/ stays gitignored so the 3.4GB of parquets/npz do not enter git; 748K of ARA + a 4K script is all that was added."
       - "The commit message leads with the control-passed framing, and C12 is described in the body as a hypothesis with no evidence — the public artifact should not read as if the steerability mechanism were established."
+  - turn: "2026-07-22_001#7"
+    notes:
+      - "Review-only turn: user asked whether the README makes the response-to-Soligo relationship clear. Answered no, with three specific defects and a proposed rewrite. No edits made."
+      - "Recorded as ai_suggestions_pending rather than a staged observation — it is a presentation proposal awaiting the user's call, not an interpretive finding about the research. O04 was staged because it changed what the result MEANS; this changes only how it is announced."
+      - "Did NOT apply the fix unprompted despite it being an unambiguous improvement: the user has personally directed every framing decision this session (#1 the reframe, #6 the lead), and the title is theirs to choose. Flagged the under-attribution as the substantive part and the title as the part needing their taste."
+      - "Worth noting for continuity: the artifact's own related_work.md already types RW02 as the baseline this work responds to, so the README is currently INCONSISTENT with the ARA on the strength of that relationship, not merely thin. That is an argument for applying the fix regardless of the title choice."

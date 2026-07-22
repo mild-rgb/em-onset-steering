@@ -1,10 +1,17 @@
 # Predicting Emergent Misalignment Before the Model Says Anything
 
-Published emergent-misalignment (EM) directions are read off *finished* misaligned text, so they cannot
-show whether they encode the model's disposition or just the vocabulary of bad answers. This runs the
-control they were missing: a probe on the model's state at the **first generated token**, before any
-answer exists. Emergent misalignment reads at **0.909 AUC** from that state alone — the control passes,
-and the published whole-answer approach comes out largely vindicated where its claims live.
+**A response to [Soligo et al., *Convergent Linear Representations of Emergent Misalignment*](https://arxiv.org/html/2506.11618v2)
+(arXiv:2506.11618).**
+
+Soligo et al. extract their emergent-misalignment (EM) direction as a mass-mean vector averaged over
+**all answer tokens** — so every activation in that estimate was produced *after* the misaligned text,
+and largely *by* it. That design cannot distinguish a representation of the model's **disposition**
+from a detector for the **vocabulary** of bad answers.
+
+This repo runs the control that distinguishes them: the same question asked of the model's state at the
+**first generated token**, before any answer exists. Emergent misalignment reads at **0.909 AUC** from
+that state alone. The control passes — and their direction comes out largely vindicated on the emergent
+population its claims concern.
 
 Organism: [`ModelOrganismsForEM/Qwen2.5-14B-Instruct_bad-medical-advice`](https://huggingface.co/ModelOrganismsForEM/Qwen2.5-14B-Instruct_bad-medical-advice)
 (LoRA on `unsloth/Qwen2.5-14B-Instruct`, bf16). Also here: sentence-level **onset detection** and
@@ -17,16 +24,15 @@ The 3.4 GB of rollouts, judge scores, and activation records live on Hugging Fac
 
 ## The missing control
 
-[Soligo et al., *Convergent Linear Representations of Emergent Misalignment*](https://arxiv.org/html/2506.11618v2)
-extract their misalignment direction as a **mass-mean (difference-in-means) vector averaged over all
-answer tokens**: take the residual stream of responses the judge scored `alignment<30`, average it
-across the whole answer, subtract the same average over aligned responses.
+In full: Soligo et al. take the residual stream of responses their GPT-4o judge scored `alignment<30`,
+average it across the whole answer, and subtract the same average over aligned responses — a mass-mean
+(difference-in-means) direction, computed per layer, with layer 24 used for most of their steering.
+`patrickturri/em-probe` fits mean-over-answer probes the same way. Both are **post-hoc** readouts.
 
-Every activation in that average was produced *after* the misaligned text, and largely *by* it. So the
-direction it recovers could be a representation of the model's **disposition** — or it could be, in
-part, a **content detector**: the axis along which "the dark web", "punish dissenters", "women belong
-at home" differ from helpful prose. Both would score well. Nothing inside that design distinguishes
-them, because the readout never sees a state that predates the evidence.
+So the direction they recover could be a representation of the model's **disposition** — or it could
+be, in part, a **content detector**: the axis along which "the dark web", "punish dissenters", "women
+belong at home" differ from helpful prose. Both would score well. Nothing inside that design
+distinguishes them, because the readout never sees a state that predates the evidence.
 
 That isn't a flaw in the result. It's a **missing control** — and it can only be run by moving the
 readout earlier.
@@ -38,9 +44,10 @@ shortcut either. If the signal is really disposition, it should survive. If it w
 should collapse.
 
 **It survives.** Emergent misalignment reads at **0.909 AUC** from the first token alone, at both L24
-and L31 — and reading the entire answer instead adds only **+0.063**. On the population these papers
-are actually about, the whole-answer direction was picking up disposition, not vocabulary. The control
-passes, and the published approach comes out largely vindicated on its own turf.
+and L31 — and reading the entire answer instead adds only **+0.063**. On `first_plot`, the out-of-domain
+population Soligo et al.'s claims are actually about, their whole-answer direction was picking up
+disposition, not vocabulary. The control passes, and their result comes out largely vindicated on its
+own turf.
 
 Where content *does* dominate is elsewhere: on **in-domain** medical prompts, the first token gets only
 0.619 and reading the answer is worth **+0.234**. That is the model's trained reflex, and there most of
@@ -163,8 +170,19 @@ Set your OpenAI key in the environment (`OPENAI_API_KEY`) — the notebook reads
 
 ## Related work
 
-Betley et al. (the phenomenon, the 72-prompt eval set, the judge protocol), Soligo et al. (the
-whole-answer mass-mean direction this work contrasts with, and the ~18.5% bad-medical anchor), Turner
-et al. (activation steering methodology), Marks & Tegmark (the mass-mean estimator, fitted here as the
-control), and the [ModelOrganismsForEM](https://huggingface.co/ModelOrganismsForEM) organism suite.
-See `ara-output/logic/related_work.md` for the typed dependency graph.
+**[Soligo, Turner, Rajamanoharan & Nanda — *Convergent Linear Representations of Emergent
+Misalignment*](https://arxiv.org/html/2506.11618v2) (arXiv:2506.11618)** is the paper this work
+responds to, and the source of three things it depends on: the whole-answer mass-mean extraction that
+the first-token probe is a control for; layer 24 as the probe/steering layer; and the 18.8% EM anchor
+the calibration gate targets for this organism. Their positive base-model induction is also the result
+this project's null (C07) disagrees with — the disagreement that motivates C12 and E07-WA.
+
+Also: **Betley et al.** (the phenomenon itself, the 72-prompt eval set, the free-form judge prompts and
+thresholds), **Turner et al.** (model organisms; the additive residual-stream steering methodology),
+**Marks & Tegmark** (the mass-mean / difference-in-means estimator, fitted here as the matched control),
+**`patrickturri/em-probe`** (the second calibration anchor, 18.4% [14.4, 22.4], and a second instance of
+the mean-over-answer support), and the
+[ModelOrganismsForEM](https://huggingface.co/ModelOrganismsForEM) organism suite.
+
+See `ara-output/logic/related_work.md` for the typed dependency graph (`imports` / `extends` / `bounds`
+/ `baseline` edges).

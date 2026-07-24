@@ -42,3 +42,11 @@ first-token claim is carried by **Table 11** (position-0-only, 0.909), which thi
 rather than establishes.
 
 Supports **C04**, **C10**.
+
+---
+
+> **CORRECTION appended 2026-07-24.** This table's within-category fits hold the prompt *category*
+> fixed but never the *prompt*, and `first_plot` is 24 prompts whose rates run 0%–73%. The position-0
+> support (Table 11) collapses to 0.554 under prompt-grouped CV; **this pooled fit has not been
+> re-run under that control** (E-POOLGROUP, unrun). Its 0.946 should not be cited as evidence of a
+> disposition feature until it has. See **Table 12**. C04 is refuted (2026-07-24).

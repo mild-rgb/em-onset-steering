@@ -20,6 +20,9 @@ outputs in `../../em_rollouts_onset/`.
 | Table 9 | `tables/table9_steer_base_mmavg.md` | `steer_sweep_base_MMAVG_gate8_bf16.parquet` | C07, C10 |
 | Table 10 | `tables/table10_base_collapse_modes.md` | `steer_sweep_base_{,MMAVG_}gate8_bf16.parquet` | C09 |
 | Table 11 | `tables/table11_pos0_probe.md` | `acts_full_bf16.npz`, `acts_L28-36_full_bf16.npz` (E04-P0 refit, 2026-07-22) | C04, C10, C11 |
+| Table 12 | `tables/table12_prompt_identity_control.md` | `acts_full_bf16.npz` + `judged_full_bf16.parquet` (E-PROMPTID/E-GROUPCV/E-WAGROUP, 2026-07-24) | C04, C10, C11 |
+| Table 13 | `tables/table13_coherence_is_prompt_conditioning.md` | `steer_sweep_{,base_,base_MMAVG_}gate8_bf16.parquet` + judge prompt (E-PROMPTCOND, 2026-07-24) | C06, C07, C09, C12 |
+| Table 14 | `tables/table14_wagroup_full_grid.md` | `acts_full_bf16.npz` + `acts_L28-36_full_bf16.npz` via `wagroup_probe.py` (E-WAGROUP full grid, L24+L31, 2026-07-24) | C04, C10, C11 |
 
 ## Figures
 | id | file | source | supports |

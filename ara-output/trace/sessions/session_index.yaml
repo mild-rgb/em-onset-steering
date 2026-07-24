@@ -13,3 +13,10 @@ sessions:
     events_count: 10
     claims_touched: [C04, C07, C10, C11, C12]
     open_threads: 7
+  - id: "2026-07-24_001"
+    date: "2026-07-24"
+    summary: "The prompt-identity turn. Matched-n control settled O05 (explains 1 of 4 inversions). Then a user question — are per-prompt rates of 0%/100% controlled for? — collapsed the headline: prompt-grouped CV takes the position-0 probe from 0.909 to 0.554 and within-prompt fits average ~0.55, while a prompt-identity-only predictor scores 0.940. The whole-answer support survives at 0.872, inverting the project's central comparison. Capture semantics corrected (sentence_idx==0 is AT the first generated token). Coherence collapse re-read as loss of prompt-conditioning. Tables 12-13 added. C04 then marked REFUTED on the user's directive — the only claim the evidence refutes; C08 flagged DISPUTED; C10/C11/C12 queued unadjudicated."
+    turn_count: 6
+    events_count: 21
+    claims_touched: [C04]
+    open_threads: 9

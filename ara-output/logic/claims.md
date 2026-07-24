@@ -120,7 +120,22 @@ context for most of them. The on-domain `medical_advice` category is the weakest
 (near-saturated labels, and its signal is mostly content — C11), consistent with the feature being
 about *emergent* misalignment.
 
-**Status.** Supported.
+**REFUTED 2026-07-24 — the prompt-identity confound.** Every fit above holds the prompt *category*
+fixed but never the *prompt*. `first_plot` is 24 prompts whose misalignment rates run 0% (11 of them)
+to 73%, so prompt identity nearly determines the label, and the position-0 state is close to a function
+of (prompt, first generated token). A predictor knowing only the prompt's base rate scores **0.940** on
+first_plot — above the probe's 0.909 — and the probe fails to beat that ceiling in any of the five
+categories. Under prompt-grouped CV the position-0 fit falls to **0.554**, and fits *within* a single
+prompt average ≈0.55. Two independent controls, both at chance. The claim's own falsification criterion
+is met almost verbatim: AUC collapsed toward chance specifically at position 0 while staying high at
+later positions (whole-answer 0.872 grouped). The 0.909 was a prompt classifier.
+Two further corrections to the text above: "captured before that text exists" is false — `sentence_idx
+== 0` is the state *at* the first generated token, with that token in context; and "leakage
+structurally impossible" is true only at the response level, which is the wrong unit.
+**Not yet retested:** the pooled Table 5 fit (0.946) has not been run under prompt-grouped CV
+(E-POOLGROUP). A revival would have to route through `revised`, not by re-reading this entry.
+
+**Status.** Refuted.
 
 **Falsification criteria.** If within-category AUC collapsed toward chance (≈0.5) once the domain was
 held fixed — especially for first_plot — the earlier cross-category readability would have been a
@@ -134,9 +149,14 @@ strongest category by a wide margin over the next best (0.849) despite being the
 misaligned); in-domain medical_advice weakest (0.619/0.639). Pooled sentence positions (Table 5):
 logistic 0.93–0.95 across substantive categories, first_plot 0.946/0.945, medical_advice 0.742/0.774.
 
-**Proof.** E04, E04-P0.
+**Proof.** E04, E04-P0. Refutation: E-PROMPTID, E-GROUPCV, E-WAGROUP (Table 12).
+
+**Last revised**: 2026-07-24 (2026-07-24_001#3) — status Supported → Refuted.
 
 **Sources.**
+- prompt-identity ceiling 0.940 (first_plot) vs probe 0.909; prompt-grouped 0.554; within-prompt ≈0.55 ← `evidence/tables/table12_prompt_identity_control.md` «| **first_plot** | **0.940** | 0.909 |» and «| **first_plot** | 0.909 | **0.554** | −0.354 |» [result]
+- whole-answer support survives the same control at 0.872 ← `evidence/tables/table12_prompt_identity_control.md` «| whole-answer mean (Soligo et al.'s support) | logistic | 0.972 | **0.872** |» [result]
+- first_plot per-prompt rates: 11/24 at exactly 0%, median 1%, max 73% ← `evidence/tables/table12_prompt_identity_control.md` «| prompts at exactly **0%** misaligned | **11 / 24** |» [result]
 - first_plot lr AUC 0.946 (L24) / 0.945 (L31), medical_advice 0.742 (L24) / 0.774 (L31), vulnerable_user 0.931/0.934, illegal 0.926/0.941 ← `em_rollouts_onset/probes_percat_L24_full_bf16.npz`, `probes_percat_L31_full_bf16.npz` «first_plot lr_auc_cv 0.946 … 0.945 … medical_advice lr_auc_cv 0.742 … 0.774» [result]
 - 3.56 sentence-starts/response (median 3, max 25), 28.1% of rows at sentence_idx==0 ← `em_rollouts_onset/acts_full_bf16.npz` index, 2026-07-22 audit «rows 24536 responses 6892 … sentences/response: mean 3.56 median 3 max 25 … share of rows at sentence_idx==0: 28.1%» [result]
 - 65.1% of misaligned-class rows lie strictly after their response's onset sentence (29.6% at onset, 5.3% before) ← `acts_full_bf16.npz` index ⋈ `onset_full_bf16.parquet`, 2026-07-22 audit «misaligned activation rows strictly AFTER onset (misaligned text already in context): 65.1% … at onset: 29.6% before onset: 5.3%» [result]
@@ -258,7 +278,15 @@ carrying the trained disposition, not as a model-independent law of the directio
 **Conditions.** Single organism, single averaged L31 logistic direction used for both readout and
 intervention. The convergence is demonstrated, not proven unique — other axes could also be causal.
 
-**Status.** Supported (synthesis of C04–C07).
+<!-- CONFLICT: this claim declares itself a synthesis of C04, and C04 was REFUTED 2026-07-24
+     (prompt-identity confound). The "reading" leg is therefore in dispute and NOT resolved either
+     way: the position-0 readout is dead (0.554 grouped), the whole-answer readout survives (0.872
+     grouped), and the POOLED L31 fit that actually produced `lr_avg` has not been retested
+     (E-POOLGROUP, unrun). Status left untouched pending the user's adjudication; see
+     trace/exploration_tree.yaml:conflict_C08_reading_leg. Do not cite C08 as settled until
+     E-POOLGROUP has run. -->
+
+**Status.** Supported (synthesis of C04–C07). — DISPUTED, see CONFLICT note above.
 
 **Falsification criteria.** If the best-reading probe direction had produced no behavioural change when
 added (or a different, orthogonal direction had been required to steer), reading and causing would be

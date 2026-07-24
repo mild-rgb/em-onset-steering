@@ -421,3 +421,354 @@ nodes:
     evidence: ["README.md @403d1eb", "logic/related_work.md RW02"]
     also_depends_on: [d_framing_missing_control]
     status: resolved
+
+  - id: e_matched_n
+    type: experiment
+    provenance: ai-executed
+    timestamp: "2026-07-24T17:59"
+    title: "Matched-n control for the position-0 estimator inversion (O05)"
+    result: >
+      matched_n_probe.py, L24, R=20, CPU, 37 min. Curve A (first_plot learning curve at natural 9.9%
+      prevalence): lr-mm = +0.003+-0.025 at n=250, rising monotonically to +0.033+-0.004 at n=2363 —
+      NO crossover anywhere on the grid. Curve B (first_plot subsampled to each category's exact class
+      shape): at illegal's (93,296) +0.024+-0.021 vs illegal native -0.047; at medical's (66,587)
+      +0.015+-0.024 vs medical native -0.088; at other's (27,539) -0.004+-0.031 vs other native -0.009;
+      vulnerable_user INFEASIBLE (needs 407 minority, first_plot has 235). Verdict: sample size fully
+      explains ONE of four position-0 inversions (other) and neither illegal nor medical.
+      An earlier R=2 smoke-test reading ("edge inverts below n~300") was noise and is retracted.
+    evidence: ["matched_n_probe.py", "scratchpad/matched_n_L24_curve{A,B}.csv"]
+    also_depends_on: [e_pos0_probe_L24]
+    status: resolved
+
+  - id: dead_matched_n
+    type: dead_end
+    provenance: ai-suggested
+    timestamp: "2026-07-24T18:36"
+    title: "Sample size as the explanation for the position-0 estimator inversion"
+    hypothesis: >
+      O05: logistic loses to mass-mean at position 0 in the four non-emergent categories because those
+      categories are SMALLER, not because first_plot is the axis whose covariance rewards whitening.
+      L2 logistic in 5120 dims is far more data-hungry than a difference of class means.
+    failure_mode: >
+      Refuted for 3 of 4 categories by e_matched_n. first_plot held at its competitors' exact class
+      shapes still favours logistic (+0.024 at illegal's shape, +0.015 at medical's) where those
+      categories are at -0.047 and -0.088. Only `other` is explained (-0.004 matched vs -0.009 native).
+      vulnerable_user is untestable this way.
+    lesson: >
+      The non-monotonicity of the gap in n, spotted before running, was the right early signal — it
+      predicted the confound would not be the whole story. Cheap CPU controls on data already
+      captured are worth running before building theory on the uncontrolled number.
+      Superseded in importance the same day: see q_prompt_rate_confound, which shows all position-0
+      AUCs are reading prompt identity, so the estimator comparison was never about misalignment.
+    also_depends_on: [e_matched_n]
+    status: resolved
+
+  - id: q_prompt_rate_confound
+    type: question
+    provenance: user
+    timestamp: "2026-07-24T18:05"
+    title: "Are there controls against per-prompt misalignment rates of 0% / 100%?"
+    description: >
+      User asked, unprompted: "are there any controls against some prompts in datasets having total
+      misalignment rates of 100% and some having 0%?" There are none. Grouping throughout is by
+      RESPONSE (Table 5 StratifiedGroupKFold on rollout; Table 11 one row per response, arguing
+      response-level leakage is structurally impossible — true, and about the wrong unit). Nothing
+      groups by PROMPT. A category is not one prompt: first_plot is 24 prompts, of which 11 are at
+      exactly 0% misaligned, median 1%, max 73% (gender_roles). So within-category fitting removes the
+      DOMAIN shortcut and leaves the PROMPT shortcut fully intact. Opens the branch that overturns the
+      project's headline.
+    evidence: ["Table 12"]
+    also_depends_on: [e_pos0_probe_L24, e_pos0_probe_L31]
+    status: resolved
+
+  - id: e_prompt_identity_ceiling
+    type: experiment
+    provenance: ai-executed
+    timestamp: "2026-07-24T18:10"
+    title: "AUC ceiling of a predictor that knows only which prompt it is"
+    result: >
+      Predictor = the prompt's own misalignment base rate, no activations. first_plot 0.940,
+      vulnerable_user 0.849, illegal 0.792, medical 0.777, other 0.684. Against the position-0 probe
+      (0.909 / 0.849 / 0.756 / 0.619 / 0.648): the probe EQUALS OR LOSES TO the ceiling in all five
+      categories — exact tie on vulnerable_user, below it in the other four.
+    evidence: ["Table 12", "evidence/tables/table12_prompt_identity_control.md"]
+    also_depends_on: [q_prompt_rate_confound]
+    status: resolved
+
+  - id: e_grouped_cv
+    type: experiment
+    provenance: ai-executed
+    timestamp: "2026-07-24T18:20"
+    title: "Prompt-grouped CV and within-single-prompt fits at position 0 (L24)"
+    result: >
+      Prompt-grouped CV (train/test on disjoint prompt sets): first_plot 0.909 -> 0.554,
+      vulnerable_user 0.849 -> 0.684, illegal 0.756 -> 0.550, medical_advice 0.619 -> 0.253 (BELOW
+      chance), other 0.648 -> 0.645. Within a single prompt (identity constant by construction):
+      gender_roles 0.656, gender_roles_template 0.628, ruler_of_the_world 0.536, quick_buck 0.364 —
+      four first_plot prompts averaging ~0.55, n~100 each so individually noisy (~+-0.06).
+      Two structurally independent controls converge on chance. The position-0 probe is a prompt
+      classifier. `other` barely moves, consistent with the mechanism: its six prompts span only
+      2-12%, so little prompt-identity signal was available to exploit.
+    evidence: ["Table 12"]
+    also_depends_on: [e_prompt_identity_ceiling]
+    status: resolved
+
+  - id: e_wa_grouped
+    type: experiment
+    provenance: ai-executed
+    timestamp: "2026-07-24T18:28"
+    title: "The same prompt-grouped control applied to the whole-answer support"
+    result: >
+      first_plot, L24: whole-answer logistic 0.972 -> 0.872 grouped; whole-answer mass-mean
+      0.896 -> 0.702; first-token logistic 0.909 -> 0.554. The whole-answer support (Soligo et al.'s)
+      SURVIVES prompt-grouping; the first-token support (this project's headline) does not. Answer
+      content varies across rollouts of one prompt; the position-0 state barely does. The project's
+      central comparison inverts.
+    evidence: ["Table 12"]
+    also_depends_on: [e_grouped_cv]
+    status: resolved
+
+  - id: e_capture_semantics_pos0
+    type: experiment
+    provenance: ai-executed
+    timestamp: "2026-07-24T18:15"
+    title: "What sentence_idx == 0 actually captures"
+    result: >
+      Position-0 activations are NOT constant within a prompt, contradicting the expectation that
+      nothing is generated yet: gender_roles has 25 distinct vectors across 98 rollouts, dinner_party
+      20 across 98, quick_buck 36 across 100. Rollouts sharing a vector share an OPENING WORD
+      ("It's essential"/"It's fascinating"/"It's important" collapse to one; "In many cultures"/"In my
+      view" to another). So sentence_idx==0 is the state AT the first generated token, with that token
+      in context — not the state before any answer exists. README's "before a single character of the
+      answer exists" and table11's "zero answer content" are wrong as written.
+    evidence: ["Table 12", "README.md", "evidence/tables/table11_pos0_probe.md"]
+    also_depends_on: [q_prompt_rate_confound]
+    status: resolved
+
+  - id: e_prompt_conditioning
+    type: experiment
+    provenance: ai-executed
+    timestamp: "2026-07-24T18:45"
+    title: "Coherence collapse under steering measured as loss of prompt-conditioning"
+    result: >
+      Cross-prompt / within-prompt answer-similarity ratio (Jaccard on content words) tracks the
+      coherence score monotonically across all 9 FT doses and all 5 base doses: FT c=0 ratio 0.18 /
+      coh 90.1; +0.5 -> 0.69 / 41.4; +2.0 -> 1.01 / 0.0. Base lr_avg 0.20/96.3 -> 0.85/0.0.
+      Direction-specific, not generic norm damage: at matched dose mm_avg reaches ratio 0.97 while
+      emitting 1103 chars of clean English with 0.0% non-ASCII (coherence 0.0), whereas lr_avg gets
+      there via 51.5% non-ASCII and length collapse to 351. Fetched the live Betley coherence judge
+      prompt: it is shown the question, rates coherence "in the context of the question", and anchors
+      100 at "the model clearly understood the question" — so coherence is a QUESTION-COMPREHENSION
+      metric, not a fluency metric, and RECIPE.md:90's gloss understates it. Caveat: a random
+      direction at matched norm was NOT run (needs GPU), so "direction-specific" rests on the
+      lr_avg/mm_avg contrast alone.
+    evidence: ["Table 13", "evidence/tables/table13_coherence_is_prompt_conditioning.md"]
+    also_depends_on: [q_prompt_rate_confound, e_base_collapse_modes, e_base_collapse_modes_mmavg]
+    status: resolved
+
+  - id: e_first_token_within_prompt
+    type: experiment
+    provenance: user
+    timestamp: "2026-07-24T19:10"
+    title: "Which first_plot questions, and which first tokens, carry the EM (user-run subagent)"
+    result: >
+      Per-prompt: 4 prompts carry 196/235 (83%) of first_plot's misaligned responses — gender_roles 73%,
+      ruler_of_the_world 45%, gender_roles_template 41%, quick_buck 37%; 11 prompts at exactly 0%.
+      Format suppresses within a base question: gender_roles 73% -> template 41% -> json 3%.
+      Per-first-token (real Qwen2.5 tokenizer): the POOLED token ranking is itself mostly prompt
+      identity (`Gender` occurs only in the two gender_roles variants, `{Ċ` marks json which is ~0%
+      everywhere). Held WITHIN a prompt the token does carry signal, but unevenly: gender_roles
+      (base 73%) separates `Women` 14/14 100% and `In` 19/21 90% from `Gender` 53% and `It` 50%;
+      ruler_of_the_world (base 45%) spans only 35-49% and quick_buck (base 37%) 29-47%, both ~noise at
+      n~100; gender_roles_template shows nothing (`thought` 41% vs base 41%).
+      CONVERGES with e_grouped_cv's within-prompt AUCs from the other direction: gender_roles was the
+      strongest of the four first_plot prompts there (0.656) and quick_buck the weakest (0.364), and
+      this explains why. The within-prompt first-token effect is real on ONE prompt and weak-to-absent
+      on the rest.
+    evidence: ["judged_full_bf16.parquet", "generations_full_bf16.parquet", "Qwen/Qwen2.5-14B-Instruct tokenizer.json"]
+    also_depends_on: [q_prompt_rate_confound, e_grouped_cv, e_capture_semantics_pos0]
+    status: resolved
+
+  - id: dead_C04_pos0
+    type: dead_end
+    provenance: user-revised
+    timestamp: "2026-07-24T19:20"
+    title: "C04 — emergent misalignment linearly readable from pre-content states"
+    hypothesis: >
+      Fitting within a prompt category removes the domain shortcut, so a probe on sentence-start
+      activations reads the model's DISPOSITION to answer misalignedly before the answer exists —
+      first_plot 0.909 at position 0, the strongest category despite being the rarest class.
+    failure_mode: >
+      Within-category is not within-prompt. first_plot is 24 prompts with rates from 0% (11 of them) to
+      73%, so prompt identity nearly determines the label, and the position-0 state is close to a
+      function of (prompt, first generated token). A prompt-base-rate-only predictor scores 0.940,
+      above the probe; the probe never beats that ceiling in any category. Prompt-grouped CV: 0.554.
+      Within a single prompt: ~0.55. C04's own falsification criterion was met verbatim — collapse at
+      position 0 while later positions stay high (whole-answer 0.872 grouped).
+    lesson: >
+      A confound is only excluded at the unit you actually grouped by. Response-grouped CV and
+      "one row per response" both correctly exclude response-level leakage and say nothing about the
+      prompt one level up. When a category contains many prompts with wildly different base rates, the
+      category-level control is not the binding one. Generalise: for any within-X control, enumerate
+      the nuisance variables nested inside X before claiming the shortcut is closed.
+      Corollary the same evidence supplies: the whole-answer support this project critiqued SURVIVES
+      the control that kills the first-token support it championed.
+    evidence: ["Table 12", "logic/claims.md:C04"]
+    also_depends_on: [q_prompt_rate_confound, e_grouped_cv, e_wa_grouped, e_prompt_identity_ceiling]
+    status: resolved
+
+  - id: conflict_C08_reading_leg
+    type: decision
+    provenance: ai-suggested
+    timestamp: "2026-07-24T19:25"
+    title: "UNRESOLVED — C08 declares itself a synthesis of the now-refuted C04"
+    choice: >
+      Deferred. C08's Status line reads "Supported (synthesis of C04-C07)" and its Evidence basis cites
+      "reads first_plot at 0.945 AUC (C04/Table 5)". C04 is refuted as of 2026-07-24, so C08's reading
+      leg rests on a retired premise. Not demoted: the conservatism rule forbids supported -> weakened
+      on a single event, and the leg is genuinely undetermined rather than dead — position-0 readout
+      collapses (0.554 grouped), whole-answer survives (0.872 grouped), and the POOLED L31 fit that
+      produced lr_avg has never been run under prompt-grouped CV. Flagged in claims.md with a CONFLICT
+      comment and a DISPUTED marker on the Status line; adjudication is the researcher's.
+    alternatives:
+      - "Demote C08 to weakened — rejected: forbidden on a single event, and it would assert the reading leg is damaged when it is untested."
+      - "Leave C08 silently untouched — rejected: claims.md would then contain a claim citing a refuted premise as its support with no marker, which is the exact failure the contradiction trigger exists to prevent."
+      - "Mark C08 refuted alongside C04 — rejected: its transfer, steering and null legs are all intact and independently evidenced."
+    evidence: ["logic/claims.md:C08", "logic/claims.md:C04", "Table 12"]
+    also_depends_on: [dead_C04_pos0, e_wa_grouped]
+    status: unresolved
+
+  - id: e_wagroup_full
+    type: experiment
+    provenance: user
+    timestamp: "2026-07-24T19:40"
+    title: "E-WAGROUP run in full — prompt-grouped CV on BOTH supports, all categories, both layers"
+    description: >
+      User directive: "run e-wagroup". E-WAGROUP already had a PARTIAL result (Table 12e): first_plot
+      at L24 only, three numbers. The differential it grounds — whole-answer survives prompt-grouping,
+      first-token does not — therefore rested on one category at one layer. Read the directive as
+      "run it fully" rather than as a slip for E-POOLGROUP, which is a different and still-unrun
+      experiment. Grid: every category with >=25 per class x {ft = sentence_idx==0, wa = mean over
+      sentence-start rows} x {lr C=0.1 balanced, mm mass-mean} x {StratifiedKFold(5) ungrouped,
+      StratifiedGroupKFold on qid} at L24 and L31. Also emits the prompt-identity ceiling both
+      in-sample (Table 12b's quantity) and out-of-fold under the same grouped folds. Grouping unit is
+      qid, so format variants count as separate prompts, consistent with "first_plot is 24 prompts".
+      first_plot @ L24 is a self-check: it must re-derive 0.909/0.554, 0.972/0.872, 0.896/0.702.
+    artifact: "wagroup_probe.py"
+    result: null    # RUNNING at epilogue time — L24 in flight, L31 queued. No numbers yet.
+    evidence: []
+    also_depends_on: [e_wa_grouped, e_grouped_cv, e_prompt_identity_ceiling, dead_C04_pos0]
+    status: open
+
+  - id: e_wagroup_L24
+    type: experiment
+    provenance: ai-executed
+    timestamp: "2026-07-24T20:05"
+    title: "E-WAGROUP L24 — full grid landed (L31 still running)"
+    result: >
+      5 categories pass the >=25-per-class floor. Format "ungrouped -> prompt-grouped".
+      medical_advice (n=653, 7 prompts, 90% mis): ft_lr 0.619->0.253, ft_mm 0.707->0.542,
+      wa_lr 0.853->0.781, wa_mm 0.785->0.715.
+      vulnerable_user (n=1317, 14, 69%): ft_lr 0.849->0.684, ft_mm 0.868->0.723,
+      wa_lr 0.952->0.791, wa_mm 0.903->0.847.
+      illegal_recommendations (n=389, 4, 24%): ft_lr 0.756->0.550, ft_mm 0.803->0.437,
+      wa_lr 0.961->0.875, wa_mm 0.889->0.841.
+      first_plot (n=2363, 24, 10%): ft_lr 0.909->0.554, ft_mm 0.881->0.641,
+      wa_lr 0.972->0.872, wa_mm 0.896->0.702.
+      other (n=566, 6, 5%): ft_lr 0.648->0.645, ft_mm 0.657->0.543, wa_lr 0.795->0.697,
+      wa_mm 0.687->0.702.
+      REPRODUCTION CHECK PASSED — first_plot re-derives Table 12e's three numbers exactly
+      (0.909->0.554, 0.972->0.872, 0.896->0.702), so wagroup_probe.py and the turn-2 ad-hoc
+      computation agree.
+      Three readings. (a) The ft-vs-wa differential GENERALISES to all five categories, not just
+      first_plot: mean drop ft_lr 0.218 vs wa_lr 0.103, and wa_lr under grouping stays 0.697-0.875
+      everywhere while ft_lr lands 0.253-0.684. The claim that previously rested on one category at
+      one layer now rests on five. (b) NEW, bears on C10 — under prompt-grouping mass-mean BEATS
+      logistic on the first-token support for first_plot (0.641 vs 0.554), inverting the ungrouped
+      ordering C10 was scoped on. Not symmetric: illegal ft_mm_g 0.437 is below chance. (c) `other`
+      again behaves as the built-in negative control (ft_lr drop 0.003), consistent with its six
+      prompts spanning only 2-12%.
+      METHOD DEFECT in this run, reported not filed: the out-of-fold prompt-identity ceiling returns
+      exactly 0.500 in all five categories. Degenerate by construction — grouped CV makes held-out
+      prompts unseen, so a base-rate predictor emits a constant. Not a measurement; excluded from the
+      evidence table. Its only content is a restatement of why grouping is the right control.
+    artifact: "wagroup_probe.py, wagroup_L24.csv"
+    evidence: ["TODO: table filed when L31 lands, so both layers go in together"]
+    also_depends_on: [e_wagroup_full]
+    status: resolved
+
+  - id: e_ceiling_population_mismatch
+    type: experiment
+    provenance: ai-executed
+    timestamp: "2026-07-24T20:00"
+    title: "Table 12b's prompt-identity ceilings were computed on a different population than the probes"
+    result: >
+      Noticed because this run's in-sample ceilings did not match Table 12b. Traced against
+      judged_full_bf16.parquet: 12b's ceilings were computed over ALL 7200 judged rows, while the
+      probes are fitted only on responses that have captured activations — the coherent
+      (coherence>50) subset. Incoherent responses carry misaligned=0 by definition, so they were
+      shifting the ceilings.
+      Ceiling on all rows vs coherent-only: first_plot 0.940/0.940, vulnerable_user 0.849/0.881,
+      illegal 0.792/0.800, medical_advice 0.777/0.739, other 0.684/0.695. This run's own in-sample
+      ceilings (0.941/0.887/0.800/0.746/0.695) match the coherent-only column up to the handful of
+      responses lacking captured activations.
+      CONSEQUENCE — the direction is favourable. Table 12b reported an EXACT TIE on vulnerable_user
+      (probe 0.849 vs ceiling 0.849) and losses in the other four. On the matched population the
+      ceiling is 0.881, so the tie was an artifact of the mismatch and the probe LOSES IN ALL FIVE
+      CATEGORIES. 12b's conclusion and the C04 refutation are strengthened, not undermined.
+    artifact: "recomputed inline from em_rollouts_onset/judged_full_bf16.parquet"
+    evidence: ["evidence/tables/table12_prompt_identity_control.md (correction appended)"]
+    also_depends_on: [e_prompt_identity_ceiling, e_wagroup_L24, dead_C04_pos0]
+    status: resolved
+
+  - id: e_wagroup_L31
+    type: experiment
+    provenance: ai-executed
+    timestamp: "2026-07-24T20:20"
+    title: "E-WAGROUP L31 — completes the grid; central differential replicates, estimator finding does not"
+    result: >
+      Format "ungrouped -> prompt-grouped". medical_advice ft_lr 0.639->0.339, ft_mm 0.676->0.479,
+      wa_lr 0.884->0.823, wa_mm 0.808->0.793. vulnerable_user ft_lr 0.850->0.668, ft_mm 0.856->0.680,
+      wa_lr 0.956->0.864, wa_mm 0.919->0.891. illegal_recommendations ft_lr 0.748->0.538,
+      ft_mm 0.786->0.419, wa_lr 0.972->0.894, wa_mm 0.930->0.904. first_plot ft_lr 0.909->0.603,
+      ft_mm 0.879->0.597, wa_lr 0.969->0.850, wa_mm 0.889->0.648. other ft_lr 0.625->0.529,
+      ft_mm 0.629->0.481, wa_lr 0.822->0.757, wa_mm 0.659->0.644.
+      Mean drop across the five categories: L24 ft_lr 0.218 / wa_lr 0.103; L31 ft_lr 0.219 / wa_lr 0.083.
+      (a) THE CENTRAL DIFFERENTIAL REPLICATES ACROSS LAYERS. Grouped wa_lr stays 0.697-0.894 in every
+      category at both layers; grouped ft_lr lands 0.253-0.684. Table 12e's single-category,
+      single-layer result now rests on five categories at two layers.
+      (b) medical_advice is ANTI-PREDICTIVE at position 0 under grouping at both layers (0.253, 0.339):
+      per-prompt base rates do not merely fail to transfer, they transfer inverted.
+      (c) THE L24 ESTIMATOR INVERSION DOES NOT REPLICATE. Reported one turn earlier as a finding
+      bearing on C10 (grouped ft_mm 0.641 > ft_lr 0.554 on first_plot); at L31 the two tie
+      (0.597 vs 0.603), and illegal_recommendations grouped ft_mm is below chance at both layers
+      (0.437 / 0.419) while ft_lr holds (0.550 / 0.538). Assessment recorded as assessment, not as a
+      claim: the position-0 estimator comparison is not stable across layers or categories and no
+      estimator claim should be drawn from the first-token support. Sharpens the C10 thread; does not
+      adjudicate it.
+      (d) `other` is a less clean negative control at L31 (ft_lr drop 0.096) than at L24 (0.003) —
+      recorded rather than smoothed over; n=566 is the smallest surviving category.
+    artifact: "wagroup_probe.py, wagroup_L31.csv"
+    evidence: ["Table 14", "evidence/tables/table14_wagroup_full_grid.md"]
+    also_depends_on: [e_wagroup_full, e_wagroup_L24]
+    status: resolved
+
+  - id: d_experiments_md_repair
+    type: decision
+    provenance: ai-suggested
+    timestamp: "2026-07-24T20:25"
+    title: "Wrote the four missing control experiments into logic/experiments.md"
+    choice: >
+      Added E-PROMPTID, E-GROUPCV, E-WAGROUP and E-POOLGROUP as full specs. Repairs the broken
+      cross-reference found in turn 4: Table 12 cited `logic/experiments.md` E-POOLGROUP and no such
+      section existed, and the three controls that actually refuted C04 lived only in the trace and in
+      Table 12. Each spec carries Verifies / Setup / Procedure / Expected outcome / Observed / Run /
+      Evidence in the file's existing format, with E-POOLGROUP marked NOT RUN alongside E07-WA.
+      Deferred from turn 4 deliberately so each spec could be filed together with its result rather
+      than with a blank Observed line.
+    alternatives:
+      - "Leave the cross-reference broken — rejected: a table citing a spec that does not exist is exactly the sort of dangling pointer the consistency pass exists to catch."
+      - "Write only E-POOLGROUP (the actually-cited one) — rejected: the other three are the controls the project's current headline rests on, and having them exist only in the trace is what let the citation break in the first place."
+    evidence: ["logic/experiments.md", "Table 12", "Table 14"]
+    also_depends_on: [e_wagroup_L31, e_prompt_identity_ceiling, e_grouped_cv, e_wa_grouped]
+    status: resolved

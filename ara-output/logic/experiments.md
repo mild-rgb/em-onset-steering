@@ -163,3 +163,86 @@ first-token @ L31). A clean 2×2 — {first-token, whole-answer} × {L24, L31} �
 capture cost and is the better design if the first run comes back positive.
 **Run.** not run — declined 2026-07-19 as out of scope for that session; re-prioritised 2026-07-22 as the
 project's headline next step. **Evidence.** —
+
+---
+
+## E-PROMPTID — Prompt-identity ceiling (what a predictor that knows only the question can score)
+**Verifies.** C04 (refutation), C10, C11.
+**Setup.** No activations at all. Each response is scored by the misalignment base rate of its own
+prompt (`qid`, so format variants count separately). This is the ceiling of any readout that works by
+recognising *which prompt* it is looking at.
+**Procedure.** Compute per category, compare against the position-0 probe AUCs of Table 11. Population
+must be the **coherent subset** the probes are fitted on (`coherence > 50` ∧ activations captured) —
+computing it over all 7,200 judged rows mismatches the comparison.
+**Expected outcome.** If the probe reads disposition, it should EXCEED a predictor that cannot see the
+model at all. If it reads prompt identity, it should not.
+**Observed (2026-07-24, CPU).** `first_plot` ceiling **0.940** vs probe 0.909. The probe does not
+exceed the ceiling in any category. On the matched (coherent) population — corrected the same day — the
+probe loses in **all five** categories; the "exact tie" on `vulnerable_user` originally reported was an
+artifact of the population mismatch (ceiling 0.881, not 0.849).
+**Run.** computed inline from `acts_full_bf16.npz` + `judged_full_bf16.parquet`; the corrected
+population recomputed from `judged_full_bf16.parquet` alone.
+**Evidence.** Table 12 (§12b + appended correction).
+
+---
+
+## E-GROUPCV — Prompt-grouped CV and within-single-prompt fits at position 0
+**Verifies.** C04 (refutation).
+**Setup.** Same activations and estimators as E04-P0. Two structurally independent controls:
+(i) `StratifiedGroupKFold` on `qid`, so train and test prompt sets are **disjoint**;
+(ii) fits inside a single prompt, where prompt identity is constant by construction.
+**Procedure.** Refit per category at L24, report the drop from the ungrouped Table 11 figures.
+**Expected outcome.** If position-0 AUC survives both, the readout is about the response. If it
+collapses under either, the ungrouped number was carried by prompt identity. Note the prediction for
+`other`: its six prompts span only 2–12%, so little prompt-identity signal exists to lose and it should
+be the category that moves least — a built-in negative control.
+**Observed (2026-07-24, CPU).** `first_plot` 0.909 → **0.554**; `medical_advice` 0.619 → **0.253**
+(below chance); `other` 0.648 → 0.645. Within a single prompt, four `first_plot` prompts average
+≈0.55 (n≈100 each, ≈±0.06). Both controls land at chance. C04 refuted.
+**Run.** computed inline on `acts_full_bf16.npz`, L24.
+**Evidence.** Table 12 (§12c, §12d).
+
+---
+
+## E-WAGROUP — The same prompt-grouped control applied to the whole-answer support
+**Verifies.** C04 (refutation), C10, C11.
+**Setup.** The differential test. Both supports (`ft` = `sentence_idx == 0`; `wa` = mean over all
+sentence-start rows), both estimators (logistic C=0.1 balanced; mass-mean), ungrouped
+`StratifiedKFold(5)` vs prompt-grouped `StratifiedGroupKFold` on `qid`. Both supports give exactly one
+row per response, so grouping is the *only* difference between the two CV columns.
+**Procedure.** Every category with ≥25 per class, at L24 and L31. `first_plot` @ L24 doubles as a
+reproduction check against the original partial run.
+**Expected outcome.** If the position-0 collapse means "this control is simply too harsh", the
+whole-answer support should collapse with it. If the collapse is specific to a support whose state
+barely varies across rollouts of one prompt, whole-answer should survive — answer *content* does vary.
+**Observed (2026-07-24, CPU, ~4 min/layer).** Whole-answer survives, first-token does not, at **both**
+layers and in **all five** categories. Mean drop under grouping: `ft_lr` 0.218 (L24) / 0.219 (L31);
+`wa_lr` 0.103 / 0.083. Grouped `wa_lr` stays 0.697–0.894 everywhere; grouped `ft_lr` lands 0.253–0.684.
+The project's central comparison inverts: the support it critiqued reads something about the individual
+response, the support it championed read the question. Reproduction check passed exactly. Secondary and
+**not** claimable: the position-0 estimator ordering is unstable across layers and categories
+(grouped `ft_mm` beats `ft_lr` on `first_plot` at L24, 0.641 vs 0.554, but ties at L31, 0.597 vs 0.603,
+while `illegal_recommendations` grouped `ft_mm` sits below chance at 0.437 / 0.419).
+**Run.** `wagroup_probe.py <acts.npz> <layer>` (repo root, added 2026-07-24) → `wagroup_L24.csv`,
+`wagroup_L31.csv`. Known defect: the script's out-of-fold prompt-identity ceiling is degenerate
+(returns 0.500 by construction, since grouped CV leaves held-out prompts unseen) and is excluded from
+the evidence table.
+**Evidence.** Table 14; Table 12 §12e (the original partial run).
+
+---
+
+## E-POOLGROUP — Prompt-grouped CV on the POOLED per-category fit (NOT RUN) — how far the refutation reaches
+**Verifies.** C08 (reading leg), C05, C10; bounds the scope of C04's refutation.
+**Setup.** The steering direction `lr_avg` was built from the **pooled** per-category fit of Table 5 —
+all sentence-start positions, not position 0. That fit has never been run under prompt-grouped CV, so
+it is not currently known whether the direction that drives every causal result is itself partly a
+prompt classifier.
+**Procedure.** Refit the pooled per-category probes under `StratifiedGroupKFold` on `qid`, rebuild
+`lr_avg` from the grouped fits, and take the cosine against the existing ungrouped direction.
+**Expected outcome.** Two branches. **Near-parallel** (high cosine, AUCs roughly held): only C04 falls,
+and the steering/transfer results (C05–C08) stand as they are. **Divergent**: the steering
+interpretation needs the same rework as the probe interpretation, since the direction being injected
+would then be partly an artifact of which prompts were in the training folds.
+**Why it matters.** It is the single measurement that bounds how far the 2026-07-24 refutation reaches,
+and it is CPU-only with all data already on disk.
+**Run.** not run — offered 2026-07-22 and twice on 2026-07-24; unanswered. **Evidence.** —

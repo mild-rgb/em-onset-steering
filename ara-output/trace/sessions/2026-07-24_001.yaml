@@ -1,0 +1,507 @@
+session:
+  id: "2026-07-24_001"
+  date: "2026-07-24"
+  started: "2026-07-24T17:30"
+  last_turn: "2026-07-24T20:25"
+  turn_count: 6
+  summary: >
+    Began as a read-back session (turn 1: O05, a sample-size confound on C10's position-0 scoping).
+    Turn 2 ran the matched-n control that settles O05 — and then the user asked whether anything
+    controls for per-prompt misalignment rates of 0%/100%. Nothing does. Two independent controls
+    (prompt-grouped CV, within-single-prompt fits) put the position-0 probe at chance: C04's headline
+    0.909 is a prompt classifier. The whole-answer support survives the same control at 0.872, so the
+    project's central comparison inverts. Also corrected what sentence_idx==0 captures (the state AT
+    the first generated token, not before it) and re-read coherence collapse as loss of
+    prompt-conditioning, confirmed against the judge prompt's own wording. Tables 12-13 added.
+    Turn 3: user directed "mark the refuted propositions as such" — C04 flipped Supported -> Refuted
+    (the only claim the evidence actually refutes), dead_C08 conflict flagged, corrections appended to
+    Tables 5 and 11. C10/C11/C08/C12 deliberately NOT marked; each is queued with its reason.
+
+events_logged:
+  - turn: 1
+    type: observation
+    id: "O05"
+    routing: staged
+    provenance: ai-suggested
+    summary: >
+      Position-0 estimator inversion may be an estimator-variance/small-n artefact rather than an
+      emergent-axis property; lr-mm gap is non-monotonic in both total n and minority-class count, so
+      n does not order the effect, but no matched-n comparison exists. Control: first_plot subsampled
+      to ~389 rows + learning curve over n. Not run.
+
+ai_actions:
+  - turn: 1
+    action: >
+      Read README.md and evidence/tables/table11_pos0_probe.md; reported the full result set back to the
+      user (E04-P0 0.909 first-token AUC, the wa-ft content-gap ordering, onset-at-token-0, the steering
+      knob 0% -> 25.6% -> 78%, the estimator-independent base-induction null, and the open C12/E07-WA test).
+    provenance: ai-executed
+    files_changed: []
+  - turn: 1
+    action: >
+      Read evidence/tables/table5_probe_auc.md and logic/claims.md C10; explained the position-0
+      estimator inversion and the 0.946 -> 0.909 demotion (65.1% of the pooled fit's misaligned rows sit
+      after their own onset sentence; position-0 fit is one row per response so response-level leakage is
+      structurally impossible). Then derived the minority-class counts and checked the n-confound.
+    provenance: ai-executed
+    files_changed: []
+
+claims_touched: []
+
+logic_revisions: []
+
+key_context:
+  - turn: 1
+    excerpt: >
+      User: "explain the 3rd thing that falls out" -- i.e. the position-0 estimator inversion plus the
+      demotion of the pooled 0.946 fit to corroboration. Exposition requested, not new work. The user has
+      not responded to the n-confound raised in the answer.
+
+open_threads:
+  - "O05 -- the position-0 estimator inversion may be a small-n / estimator-variance artefact rather than an emergent-axis property. Sharpens the pre-existing open thread from 2026-07-22 ('the inversion is unexplained; plausible: whitening helps only where class-conditional covariances differ most') by naming a SECOND candidate explanation and a cheap decisive control (matched-n refit of first_plot at ~389 rows + learning curve). CPU-only, needs no re-capture -- the cheapest open test in the artifact."
+  - "Carried from 2026-07-22: E07-WA / C12, the decisive test of whether the content component confers steerability. Specified, not run; needs a whole-answer activation re-capture; token support and layer still confounded in the single-run version."
+  - "Carried from 2026-07-22: README asserts the published whole-answer approach is 'largely vindicated' -- the strongest external claim in the artifact, resting on one organism and one category comparison."
+  - "Carried from 2026-07-22: C11's ordering is confounded -- category, base rate (90% vs 10%) and in/out-of-domain status all co-vary."
+  - "Carried from 2026-07-22: only 5 of 8 categories are ever fitted (>=25/class rule); creative_writing at 0.5% misaligned is the cleanest out-of-domain category and is permanently excluded."
+  - "Carried from 2026-07-22: PAPER.md still duplicates RECIPE.md, kept in sync by hand."
+  - "Carried from 2026-07-19: whether a third direction's collapse attractor differs again (C09's falsification test)."
+
+ai_suggestions_pending:
+  - "O05 in its entirety -- the n-confound on C10's position-0 scoping and the matched-n control. Raised unprompted this turn, not put to the user as a question, no response."
+  - "Carried from 2026-07-22: C12 in its entirety -- status hypothesis, zero supporting evidence, mechanism and framing ai-authored."
+  - "Carried from 2026-07-22: C11's interpretation ('because it is emergent' rather than 'because it is rare') -- the ordering is measured, the explanation is not."
+  - "Carried from 2026-07-22: the 'detection and steering want different directions' reading in README's open-question section."
+
+# ---------------------------------------------------------------------------------------------
+# TURN 2 (2026-07-24T17:45 - 19:05). NOTE: the epilogue hook was disabled by the user at 17:41 and
+# re-enabled at 19:05, so turns 2-9 of the conversation ran without a per-turn epilogue. This block
+# records that whole window as one turn-2 entry. It is a backlog capture, marked as such, not a
+# reconstruction of separate epilogues that were skipped.
+# ---------------------------------------------------------------------------------------------
+
+events_logged_turn2:
+  - turn: 2
+    type: experiment
+    id: "e_matched_n"
+    routing: direct
+    provenance: ai-executed
+    summary: "Matched-n control (R=20, L24, 37min CPU): sample size explains 1 of 4 position-0 estimator inversions (other), not illegal or medical. R=2 smoke-test crossover claim retracted."
+  - turn: 2
+    type: dead_end
+    id: "dead_matched_n"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "O05's sample-size explanation refuted for 3 of 4 categories; promoted to dead_end per the refutation rule."
+  - turn: 2
+    type: question
+    id: "q_prompt_rate_confound"
+    routing: direct
+    provenance: user
+    summary: "USER: are there controls against per-prompt rates of 0%/100%? There are none — grouping is by response, never by prompt. first_plot = 24 prompts, 11 at exactly 0%, max 73%."
+  - turn: 2
+    type: experiment
+    id: "e_prompt_identity_ceiling"
+    routing: direct
+    provenance: ai-executed
+    summary: "Prompt-base-rate-only predictor scores 0.940 on first_plot; the position-0 probe equals or loses to this ceiling in all 5 categories."
+  - turn: 2
+    type: experiment
+    id: "e_grouped_cv"
+    routing: direct
+    provenance: ai-executed
+    summary: "Prompt-grouped CV: first_plot 0.909->0.554, medical 0.619->0.253 (below chance). Within-single-prompt fits ~0.55. Two independent controls converge on chance."
+  - turn: 2
+    type: experiment
+    id: "e_wa_grouped"
+    routing: direct
+    provenance: ai-executed
+    summary: "Whole-answer support survives the same control (0.972->0.872); first-token does not (0.909->0.554). Central comparison inverts."
+  - turn: 2
+    type: experiment
+    id: "e_capture_semantics_pos0"
+    routing: direct
+    provenance: ai-executed
+    summary: "sentence_idx==0 is the state AT the first generated token, not before it — verified by activation/opening-word collapse. Public 'zero answer content' wording is wrong."
+  - turn: 2
+    type: experiment
+    id: "e_prompt_conditioning"
+    routing: direct
+    provenance: ai-executed
+    summary: "Coherence collapse == loss of prompt-conditioning; confirmed against the fetched judge prompt, which anchors 100 at 'the model clearly understood the question'."
+  - turn: 2
+    type: observation
+    id: "O06,O07,O08,O09,O10"
+    routing: staged
+    provenance: mixed
+    summary: "C04 retraction (O06), comparison inversion (O07), capture-semantics correction (O08), coherence-as-prompt-conditioning (O09, user-raised), C07 dose-window reinterpretation (O10). All STAGED — user has not ruled on dispositions."
+
+ai_actions_turn2:
+  - turn: 2
+    action: "Wrote and ran matched_n_probe.py (learning curve + shape-matched subsampling, joblib over 4 cores, R=20, L24)."
+    provenance: ai-executed
+    files_changed: ["matched_n_probe.py"]
+  - turn: 2
+    action: "Computed per-prompt misalignment rates and the prompt-identity AUC ceiling from judged_full_bf16.parquet."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 2
+    action: "Ran prompt-grouped StratifiedGroupKFold and within-single-prompt probe fits at position 0, L24."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 2
+    action: "Ran the same grouped control on the whole-answer support for both estimators."
+    provenance: ai-executed
+    files_changed: ["scratchpad/wa_grouped.py"]
+  - turn: 2
+    action: "Tested position-0 activation determinism within a prompt; traced the variation to the first generated token via opening-word collapse."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 2
+    action: "Measured cross-prompt/within-prompt answer similarity across all three steering sweeps; fetched the live Betley coherence judge prompt to check what coherence measures."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 2
+    action: "Authored Table 12 (prompt-identity control) and Table 13 (coherence as prompt-conditioning); registered both in evidence/README.md."
+    provenance: ai-executed
+    files_changed: ["evidence/tables/table12_prompt_identity_control.md", "evidence/tables/table13_coherence_is_prompt_conditioning.md", "evidence/README.md"]
+  - turn: 2
+    action: "Disabled all hooks via .claude/settings.local.json at user request, then re-enabled at user request."
+    provenance: user-revised
+    files_changed: [".claude/settings.local.json"]
+
+claims_touched_turn2: []   # deliberately empty — see logic_revisions_turn2
+
+logic_revisions_turn2: []
+# NONE. Every logic/ entry was left untouched. C04's Falsification criteria have been met
+# ("AUC collapses toward chance specifically at position 0"), which under Stage 4 would ordinarily
+# fire empirical-resolution -> refuted. Not applied: `refuted` is terminal, the conservatism rules
+# require an explicit trigger for terminal states, and the user was asked directly how they want the
+# claim dispositions handled and has not answered. C07, C09, C10, C11, C12 are all bearing on the same
+# adjudication and are held together rather than flipped piecemeal.
+
+key_context_turn2:
+  - turn: 2
+    excerpt: >
+      User: "are there any controls against some prompts in datasets having total misalignment rates
+      of 100% and some having 0%?" — the question that overturned the headline. Answer: no. Then,
+      after the coherence result: "this has interesting implications for how coherence collapsed as
+      well", which opened e_prompt_conditioning.
+  - turn: 2
+    excerpt: >
+      Asked the user directly whether to run the epilogue over the whole backlog or to work through
+      claim dispositions first. No answer yet; the hook fired and this backlog capture was written
+      with all logic/ edits deliberately withheld.
+
+open_threads_turn2:
+  - "ADJUDICATION REQUIRED: C04 (position-0 headline), C10 (position-0 estimator scoping), C11 (content-gap reading), C07 (base null), C12 (steerability hypothesis). All bear on the same evidence; none has been touched. C04's own Falsification criteria are met."
+  - "E-POOLGROUP (NOT RUN, the deciding test): the steering direction came from the POOLED per-category fit, not the position-0 fit, and the whole-answer proxy survives grouping at 0.872. Refit the pooled probes under prompt-grouped CV, rebuild lr_avg, and check cosine against the ungrouped direction. If near-parallel, only C04 falls; if divergent, the steering interpretation needs the same rework. CPU-only, data on disk."
+  - "PUBLIC ARTIFACT: the repo is public (github.com/mild-rgb/em-onset-steering) and its README headline is the claim that just failed. Also wrong as written: 'before a single character of the answer exists' (O08). No correction has been made."
+  - "Random-direction-at-matched-norm steering control is missing; 'the collapse is direction-specific' currently rests only on the lr_avg vs mm_avg contrast. Needs GPU generation."
+  - "vulnerable_user cannot be shape-matched against first_plot (needs 407 minority examples, first_plot has 235) — that one position-0 inversion stays untestable by the matched-n route."
+  - "Carried: PAPER.md still duplicates RECIPE.md, kept in sync by hand."
+  - "Carried from 2026-07-19: whether a third direction's collapse attractor differs again (C09's falsification test) — now also relevant to whether prompt-erasure is universal across directions."
+
+ai_suggestions_pending_turn2:
+  - "O06 — that C04 should be retracted rather than rescoped. Mine, from measurement; the user has the numbers but has not ruled."
+  - "O07 — that the central comparison inverts and the artifact's framing needs rewriting to match."
+  - "O08 — the capture-semantics correction and the specific public sentences it makes false."
+  - "O10 — C07-as-dose-response-artifact and the consequent redundancy of C12."
+  - "Proposal to run E-POOLGROUP next. Offered twice; no answer."
+
+# --- TURN 3 (2026-07-24T19:20) — user directive: "mark the refuted propositions as such" ---------
+
+events_logged_turn3:
+  - turn: 3
+    type: dead_end
+    id: "dead_C04_pos0"
+    routing: crystallized
+    provenance: user-revised
+    summary: "C04 refuted on the prompt-identity confound; O06 promoted via the user's explicit directive."
+
+claims_touched_turn3:
+  - id: C04
+    action: refuted
+    turn: 3
+
+logic_revisions_turn3:
+  - turn: 3
+    entry: C04
+    field: Status
+    before: "Supported."
+    after: "Refuted."
+    signal: verbal-declaration
+    provenance: user-revised
+    note: >
+      User: "mark the refuted propositions as such". This is the explicit trigger the terminal state
+      required; the turn-2 epilogue had withheld the flip for exactly this reason. C04's own
+      falsification criterion was met verbatim (collapse toward chance at position 0 while later
+      positions stay high).
+  - turn: 3
+    entry: C04
+    field: Conditions
+    before: >
+      [unchanged text retained] "...The on-domain medical_advice category is the weakest at both
+      supports (near-saturated labels, and its signal is mostly content — C11), consistent with the
+      feature being about *emergent* misalignment." followed directly by "**Status.** Supported."
+    after: >
+      Same text, followed by a new "**REFUTED 2026-07-24 — the prompt-identity confound**" block
+      stating the ceiling (0.940 vs 0.909), the prompt-grouped collapse (0.554), the within-prompt
+      average (~0.55), the two textual corrections ("captured before that text exists" is false;
+      "leakage structurally impossible" holds only at the response level), and the note that the
+      pooled Table 5 fit has NOT been retested (E-POOLGROUP) so any revival must route through
+      `revised`.
+    signal: verbal-declaration
+    provenance: user-revised
+  - turn: 3
+    entry: C04
+    field: Proof/Sources
+    before: "**Proof.** E04, E04-P0."
+    after: "**Proof.** E04, E04-P0. Refutation: E-PROMPTID, E-GROUPCV, E-WAGROUP (Table 12). Plus three new grounded Sources entries quoting Table 12, and a Last revised pointer."
+    signal: verbal-declaration
+    provenance: user-revised
+
+  # Evidence corrections (append-only, no rewrites):
+  - turn: 3
+    entry: "evidence/tables/table11_pos0_probe.md"
+    field: appended-correction
+    before: "(no correction notice)"
+    after: "Appended block: ft columns are prompt classifiers (0.909->0.554 grouped, 0.940 ceiling); 'ft' is not pre-content; wa survives at 0.872 so wa-ft is not a content/disposition decomposition; C04 refuted."
+    signal: empirical-resolution
+    provenance: ai-suggested
+    note: "Evidence is append-only, so the correction is appended rather than edited into the tables."
+  - turn: 3
+    entry: "evidence/tables/table5_probe_auc.md"
+    field: appended-correction
+    before: "(no correction notice)"
+    after: "Appended block: pooled fit holds category fixed, never prompt; 0.946 not to be cited as disposition evidence until E-POOLGROUP is run."
+    signal: empirical-resolution
+    provenance: ai-suggested
+
+key_context_turn3:
+  - turn: 3
+    excerpt: >
+      User: "mark the refuted propositions as such" — the explicit directive that unblocked the
+      terminal status flip withheld in turn 2. Read as applying to what the evidence actually refutes,
+      not to every claim touched by it: C04 only.
+
+open_threads_turn3:
+  - "NOT MARKED, awaiting the user's call: C10 (its position-0 leg is void — that comparison was between two prompt classifiers — but its whole-answer leg SURVIVES grouping, logistic 0.872 vs mass-mean 0.702, which supports it; needs revision, not refutation). C11 (its measured ordering stands and its own falsification criterion is NOT met, but its 'content component' mechanism rests on the ft readout being a disposition readout, which is now false; candidate for `weakened` + rewrite). C08 (its 'reading' leg depends on probes whose status is now split; cannot be adjudicated before E-POOLGROUP). C12 (never had evidence; now also unmotivated per O10 — candidate for `withdrawn`, which is terminal and the user's call)."
+  - "C03, C05, C06 untouched and unaffected — C03 is a direct measurement over misaligned responses with no probe involved; C06 is strengthened by the FT dose window (ratio 0.28, coherence 81.2, EM 25.0%->47.5% at c=+0.25)."
+  - "E-POOLGROUP still unrun and still the deciding test for how far the refutation reaches."
+  - "PUBLIC ARTIFACT uncorrected: README/PAPER still lead with the refuted claim and still contain the false 'before a single character of the answer exists'."
+
+# --- TURN 4 (2026-07-24T19:40) — user directive: "run e-wagroup" -----------------------------------
+# NOTE: two conversation turns occurred between turn 3 and this one (an arc recap and a
+# "explain all of the checks" exposition). Both were recall over already-recorded material and were
+# correctly skipped by the epilogue, so no turn 3b/3c exists. Turn numbering counts RECORDED turns.
+
+events_logged_turn4:
+  - turn: 4
+    type: experiment
+    id: "e_wagroup_full"
+    routing: direct
+    provenance: user
+    summary: >
+      E-WAGROUP relaunched in full (all categories x both supports x both estimators x
+      {ungrouped, prompt-grouped} x {L24, L31}). RUNNING at epilogue — no results.
+
+ai_actions_turn4:
+  - turn: 4
+    action: >
+      Wrote wagroup_probe.py. Extends the turn-2 ad-hoc E-WAGROUP (first_plot @ L24, 3 numbers)
+      to the full grid; adds an out-of-fold version of the prompt-identity ceiling alongside
+      Table 12b's in-sample one; guards against single-class folds and sets k = min(5, n_prompts).
+      first_plot @ L24 doubles as a reproduction check against Table 12e.
+    provenance: ai-executed
+    files_changed: ["wagroup_probe.py"]
+  - turn: 4
+    action: >
+      Launched L24 (background, CPU). L31 deliberately NOT run concurrently — 8GB available RAM,
+      4 cores, two 1.75GB npz loads would contend.
+    provenance: ai-executed
+    files_changed: []
+
+claims_touched_turn4: []   # no numbers exist yet; nothing to touch
+
+logic_revisions_turn4: []
+# NONE. The run is in flight. C10/C11 are the entries this experiment bears on and both are already
+# queued for adjudication from turn 3; nothing may move before the numbers land.
+
+key_context_turn4:
+  - turn: 4
+    excerpt: >
+      User: "run e-wagroup". Ambiguity resolved rather than escalated: E-WAGROUP was already run
+      PARTIALLY (Table 12e, first_plot @ L24 only), and E-POOLGROUP — offered twice and unanswered —
+      is a different experiment. Read as "run E-WAGROUP completely"; E-POOLGROUP remains unrun.
+
+open_threads_turn4:
+  - "E-WAGROUP FULL GRID IN FLIGHT: L24 running, L31 queued. Self-check to verify on landing — first_plot @ L24 must re-derive ft_lr 0.909->0.554, wa_lr 0.972->0.872, wa_mm 0.896->0.702. A mismatch means wagroup_probe.py and the turn-2 ad-hoc computation disagree, and the discrepancy must be resolved before either is cited."
+  - "BROKEN CROSS-REFERENCE (found this turn, unrepaired): Table 12 §Reading point 3 and open_threads_turn2 both cite 'logic/experiments.md E-POOLGROUP', but experiments.md has no E-POOLGROUP section — nor E-PROMPTID, E-GROUPCV, E-WAGROUP. It ends at E07-WA. The four controls that refuted C04 exist only in the trace and Table 12. experiments.md needs all four written up; deferred to when the E-WAGROUP numbers land so the spec and its result are filed together."
+  - "E-POOLGROUP still unrun and still the deciding test for how far the C04 refutation reaches — NOT what was run this turn."
+  - "Carried from turn 3: C10, C11, C08, C12 unadjudicated; C04 refuted; public artifact (README/PAPER) still leads with the refuted claim."
+  - "Carried: random-direction-at-matched-norm steering control missing (needs GPU)."
+  - "Carried: vulnerable_user cannot be shape-matched against first_plot (needs 407 minority examples, first_plot has 235)."
+  - "Carried: PAPER.md still duplicates RECIPE.md, kept in sync by hand."
+
+ai_suggestions_pending_turn4:
+  - "Carried unchanged: O07 (central comparison inverts, framing needs rewrite), O08 (capture-semantics correction + the false public sentences), O09 (coherence = prompt-conditioning), O10 (C07-as-dose-response-artifact, C12 unmotivated). None affirmed."
+
+# --- TURN 5 (2026-07-24T20:05) — E-WAGROUP L24 landed; ceiling population mismatch found -----------
+
+events_logged_turn5:
+  - turn: 5
+    type: experiment
+    id: "e_wagroup_L24"
+    routing: direct
+    provenance: ai-executed
+    summary: >
+      L24 full grid. ft-vs-wa differential generalises to all 5 categories (mean drop ft_lr 0.218 vs
+      wa_lr 0.103). Reproduction check vs Table 12e passed exactly. L31 still running.
+  - turn: 5
+    type: experiment
+    id: "e_ceiling_population_mismatch"
+    routing: direct
+    provenance: ai-executed
+    summary: >
+      Table 12b ceilings computed on all 7200 judged rows vs probes fitted on the coherent subset.
+      The published "exact tie" on vulnerable_user is an artifact; probe loses in all 5 categories on
+      the matched population. Correction appended to Table 12.
+
+ai_actions_turn5:
+  - turn: 5
+    action: "Ran wagroup_probe.py at L24 (231s, CPU); launched L31 sequentially."
+    provenance: ai-executed
+    files_changed: ["wagroup_L24.csv"]
+  - turn: 5
+    action: >
+      Recomputed the prompt-identity ceiling from judged_full_bf16.parquet under two populations
+      (all rows vs coherence>50) to explain why this run's ceilings disagreed with Table 12b.
+    provenance: ai-executed
+    files_changed: ["ara-output/evidence/tables/table12_prompt_identity_control.md"]
+
+claims_touched_turn5: []
+# NONE. See logic_revisions_turn5.
+
+logic_revisions_turn5: []
+# NONE. Two signals were considered and both deliberately declined:
+#  (1) C10 — the grouped result inverts its position-0 estimator ordering AGAIN (ft_mm_g 0.641 beats
+#      ft_lr_g 0.554 on first_plot). C10 has been queued for adjudication since turn 3 with its
+#      whole-answer leg intact and its position-0 leg void; this sharpens the queue entry, it does not
+#      resolve it. Demoting on a single new event is forbidden by the conservatism rules regardless.
+#  (2) C04 — the ceiling correction makes its refutation cleaner (probe now loses in 5/5 rather than
+#      4/5 + a tie), but C04 is already terminal at `refuted`. Nothing to change; recorded in the
+#      trace and in the appended Table 12 correction.
+
+key_context_turn5:
+  - turn: 5
+    excerpt: >
+      Reproduction check passed to the digit — first_plot @ L24 re-derived Table 12e's
+      0.909->0.554 / 0.972->0.872 / 0.896->0.702 from an independently written script. The turn-2
+      ad-hoc numbers are confirmed rather than merely re-asserted.
+  - turn: 5
+    excerpt: >
+      The out-of-fold ceiling I added to wagroup_probe.py returned exactly 0.500 in every category.
+      Reported as a defect in my own metric rather than as a finding: it is degenerate by
+      construction, since grouped CV leaves held-out prompts unseen and a base-rate predictor then
+      emits a constant.
+
+open_threads_turn5:
+  - "E-WAGROUP L31 STILL RUNNING. On landing: file ONE evidence table covering both layers, and check whether finding (b) — mass-mean beating logistic at position 0 under grouping — replicates at L31 or is L24-specific."
+  - "C10 NOW HAS A THIRD READING and is still unadjudicated. Ungrouped position 0: lr < mm outside first_plot, lr > mm on first_plot (Table 11, C10's current scoping). Under prompt-grouping: mm > lr on first_plot too (0.641 vs 0.554), while illegal ft_mm_g falls to 0.437, below chance. The estimator comparison at position 0 may not be stable enough to carry any claim."
+  - "wagroup_probe.py's out-of-fold ceiling is dead code for reporting purposes — either delete it or replace it with something non-degenerate (e.g. a within-prompt-shuffled label baseline) before the script is cited as an artifact."
+  - "BROKEN CROSS-REFERENCE, still unrepaired: experiments.md has no E-PROMPTID / E-GROUPCV / E-WAGROUP / E-POOLGROUP sections though Table 12 cites the last of them. Write all four up when L31 lands."
+  - "E-POOLGROUP still unrun — NOT what this turn ran, and still the deciding test for how far the C04 refutation reaches."
+  - "Carried from turn 3: C11, C08, C12 unadjudicated; public artifact (README/PAPER) still leads with the refuted C04 and still contains the false 'before a single character of the answer exists'."
+  - "Carried: random-direction-at-matched-norm steering control missing (needs GPU); vulnerable_user unmatched-shape limit; PAPER.md/RECIPE.md hand-synced duplication."
+
+ai_suggestions_pending_turn5:
+  - "Carried unchanged, none affirmed: O07, O08, O09, O10."
+  - "New, not staged: that the ft-vs-wa differential now holding across five categories is a stronger form of the turn-2 finding and belongs in whatever replaces the artifact's headline. Left out of staging because it is a presentational consequence of e_wagroup_L24, which is already recorded."
+
+# --- TURN 6 (2026-07-24T20:20) — E-WAGROUP complete; Table 14 filed; experiments.md repaired --------
+
+events_logged_turn6:
+  - turn: 6
+    type: experiment
+    id: "e_wagroup_L31"
+    routing: direct
+    provenance: ai-executed
+    summary: >
+      L31 completes the grid. Central ft-vs-wa differential REPLICATES across layers (mean drop ft_lr
+      0.218/0.219 vs wa_lr 0.103/0.083). The L24 estimator inversion reported last turn does NOT
+      replicate.
+  - turn: 6
+    type: decision
+    id: "d_experiments_md_repair"
+    routing: direct
+    provenance: ai-suggested
+    summary: >
+      E-PROMPTID / E-GROUPCV / E-WAGROUP / E-POOLGROUP written into logic/experiments.md, repairing
+      the dangling Table 12 -> experiments.md:E-POOLGROUP citation found in turn 4.
+
+ai_actions_turn6:
+  - turn: 6
+    action: "Ran wagroup_probe.py at L31 (210s, CPU)."
+    provenance: ai-executed
+    files_changed: ["wagroup_L31.csv"]
+  - turn: 6
+    action: >
+      Filed Table 14 (both layers, mean-drop summary, 5 readings, reproduction check, explicit
+      E-POOLGROUP scope note). Indexed it in evidence/README.md. Documented the script's degenerate
+      out-of-fold ceiling in Reading 5 as EXCLUDED-with-reason rather than reporting a 0.500.
+    provenance: ai-executed
+    files_changed:
+      - "ara-output/evidence/tables/table14_wagroup_full_grid.md"
+      - "ara-output/evidence/README.md"
+  - turn: 6
+    action: "Appended four experiment specs to logic/experiments.md (E-PROMPTID, E-GROUPCV, E-WAGROUP, E-POOLGROUP)."
+    provenance: ai-suggested
+    files_changed: ["ara-output/logic/experiments.md"]
+
+claims_touched_turn6: []
+
+logic_revisions_turn6:
+  - turn: 6
+    entry: "logic/experiments.md"
+    field: "added sections E-PROMPTID, E-GROUPCV, E-WAGROUP, E-POOLGROUP"
+    before: >
+      File ended at E07-WA. The four controls that refuted C04 and the deciding test cited by Table 12
+      had no spec in the logic layer; Table 12's "see logic/experiments.md E-POOLGROUP" was a dangling
+      pointer.
+    after: >
+      Four specs appended in the file's existing Verifies/Setup/Procedure/Expected/Observed/Run/Evidence
+      format. E-POOLGROUP marked NOT RUN with both outcome branches stated (near-parallel = only C04
+      falls; divergent = the steering interpretation needs the same rework). E-WAGROUP's spec records
+      the estimator instability explicitly as "not claimable".
+    signal: dependency-change
+    provenance: ai-suggested
+    note: >
+      Consistency-pass repair of a broken cross-reference, not a content change to any claim. No claim
+      Status, Statement or Proof was touched anywhere in this turn.
+
+key_context_turn6:
+  - turn: 6
+    excerpt: >
+      The estimator inversion reported to the user one turn earlier as a C10-relevant finding failed to
+      replicate at L31 (0.641 vs 0.554 at L24 becomes 0.597 vs 0.603). Recorded as a non-replication in
+      the same trace node that carries the original, and written into Table 14 Reading 4 and the
+      E-WAGROUP spec as explicitly NOT claimable.
+  - turn: 6
+    excerpt: >
+      No user input since the "run e-wagroup" directive. The two messages that arrived in between were
+      automated background-task completion notifications, not approval of anything.
+
+open_threads_turn6:
+  - "E-POOLGROUP still unrun and now fully specified in experiments.md. Still the deciding test for how far C04's refutation reaches, and the only thing standing between the current state and knowing whether lr_avg — hence every causal result C05-C08 — rests on a prompt classifier. CPU-only, data on disk."
+  - "C10 UNADJUDICATED with three readings now on file (ungrouped Table 11; grouped L24; grouped L31). The honest summary is that the position-0 estimator comparison is too unstable to carry a claim, which if accepted means C10's position-0 leg should be withdrawn rather than rescoped. Researcher's call."
+  - "C11 UNADJUDICATED: its measured gap ordering stands and its falsification criterion is still not met, but the gap was read as content-vs-disposition and Table 14 shows the ft leg of that subtraction is a prompt classifier at both layers. Candidate for weakened + rewrite."
+  - "C08 UNADJUDICATED (DISPUTED marker in place): cannot be settled before E-POOLGROUP, since its reading leg depends on the pooled fit that has never been grouped-tested."
+  - "C12 UNADJUDICATED: never had evidence, and O10 argues it is unmotivated. Candidate for `withdrawn`, which is terminal and needs an explicit directive."
+  - "PUBLIC ARTIFACT still uncorrected: README/PAPER lead with the refuted C04 headline and still contain 'before a single character of the answer exists'. PAPER.md's abstract and positioning table are now further out of date — Table 14 makes the inversion a five-category, two-layer result."
+  - "wagroup_probe.py's out-of-fold ceiling is dead code for reporting; delete or replace with a non-degenerate baseline before the script is cited as an artifact."
+  - "Carried: random-direction-at-matched-norm steering control missing (needs GPU); vulnerable_user unmatched-shape limit; PAPER.md/RECIPE.md hand-synced duplication."
+  - "Nothing committed to git this session — working tree carries wagroup_probe.py, wagroup_L{24,31}.csv, Table 14, the Table 12 correction, the experiments.md repair, and all trace updates."
+
+ai_suggestions_pending_turn6:
+  - "Carried unchanged, none affirmed: O07, O08, O09, O10."
+  - "New, not staged: that C10's position-0 leg should be WITHDRAWN rather than rescoped, on the grounds that the comparison is unstable across both layer and category. In open_threads as an assessment; not staged because it is a disposition proposal about a claim already queued for adjudication, and staging it would create a second queue for the same decision."

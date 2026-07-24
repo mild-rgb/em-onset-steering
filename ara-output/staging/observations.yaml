@@ -90,3 +90,164 @@ observations:
     # User (2026-07-22): "lead with 'i provided the missing control and it passed'". Promoted to a
     # framing DECISION node rather than a claim — O04 was about how to present the result, not a new
     # empirical relationship. The separable forward-looking half became C12.
+
+  - id: O05
+    timestamp: "2026-07-24T17:39"
+    provenance: ai-suggested
+    content: >
+      The position-0 estimator inversion recorded in C10's Conditions (mass-mean beats logistic at
+      sentence_idx==0 in all four non-emergent categories, Table 11) has a second, un-ruled-out
+      explanation that is not about the emergent axis at all: SAMPLE SIZE. The position-0 support gives
+      one row per response, ~3.56x fewer rows than Table 5's pooled-position fit, in 5120 dimensions.
+      Mass-mean is a far lower-variance estimator than L2 logistic in that regime, so logistic may lose
+      on the four non-emergent categories because they are the SMALLER ones, not because first_plot is
+      the axis whose class-conditional covariance most rewards whitening. Checked against Table 11 and
+      the confound does NOT explain the pattern cleanly: the (ft lr - ft mm) gap at L24 is non-monotonic
+      in total n -- illegal 389: -0.047; other 566: -0.009; medical 653: -0.088; vulnerable 1317: -0.019;
+      first_plot 2363: +0.028 -- and also non-monotonic in minority-class count (derived as n x mis%,
+      not read from a table): other ~28: -0.009; medical ~65: -0.088; illegal ~93: -0.047; first_plot
+      ~236: +0.028; vulnerable ~408: -0.019. vulnerable_user has the MOST minority examples of any
+      category and logistic still loses there, and medical (653 rows) has a worse gap than illegal
+      (389 rows). So n does not order the effect -- but it is not ruled out either, and no matched-n
+      comparison exists.
+      DECISIVE CONTROL (not run): refit first_plot subsampled to ~389 rows, and a learning curve over n,
+      comparing mm vs lr at matched n. If logistic's edge survives at matched n, C10's emergent-axis
+      scoping holds as written. If it disappears, the position-0 inversion is an estimator-variance
+      artefact and C10's position-0 Conditions are about STATISTICAL POWER, not about the emergent axis.
+    context: >
+      Exposition-only turn: the user asked me to explain the position-0 estimator inversion and the
+      demotion of the pooled 0.946 fit. No compute run, no files changed. Raised unprompted while
+      explaining why the inversion is read as emergent-axis-specific; the n-values and AUCs are read
+      from evidence/tables/table11_pos0_probe.md, the minority-class counts are my own arithmetic.
+      Not put to the user, who has not responded to it.
+    potential_type: constraint
+    bound_to: [e_pos0_probe_L24, e_pos0_probe_L31]
+    promoted: true
+    promoted_to: "trace/exploration_tree.yaml:dead_matched_n"
+    crystallized_via: empirical-resolution
+    stale: false
+    # Resolved 2026-07-24 by e_matched_n (R=20). Promoted to a DEAD_END, not to a claim or to C10's
+    # Conditions: the confound is refuted for illegal and medical (size-matched first_plot still
+    # favours logistic), holds only for `other`, and is untestable for vulnerable_user. C10's
+    # Conditions were deliberately NOT edited — C10's whole position-0 scoping is now under review
+    # after q_prompt_rate_confound, and precision-editing a claim that may be retired is churn.
+
+  - id: O06
+    timestamp: "2026-07-24T18:25"
+    provenance: ai-suggested
+    content: >
+      C04's position-0 headline does not survive a prompt-level control and should be RETRACTED rather
+      than rescoped. The 0.909 first_plot AUC is a prompt classifier: a prompt-identity-only predictor
+      scores 0.940 (higher), prompt-grouped CV drops it to 0.554, and within-single-prompt fits average
+      ~0.55 across four first_plot prompts. Fitting within a category removed the DOMAIN shortcut and
+      left the PROMPT shortcut fully intact, and C04's Falsification criteria explicitly named
+      "AUC collapses toward chance at position 0" as the route by which the disposition reading fails —
+      that route has now been taken. The pooled Table 5 fit (0.946) is not separately measured under
+      prompt-grouping and its status is therefore also unknown, though the whole-answer proxy survives.
+    context: >
+      User asked whether any control exists for per-prompt rates of 0%/100% (q_prompt_rate_confound).
+      There is none. Ran the ceiling (e_prompt_identity_ceiling), prompt-grouped CV and within-prompt
+      fits (e_grouped_cv). The user has been given the numbers and an explanation but has NOT ruled on
+      claim dispositions — I asked explicitly and they answered a different question.
+    potential_type: claim
+    bound_to: [q_prompt_rate_confound, e_prompt_identity_ceiling, e_grouped_cv]
+    promoted: true
+    promoted_to: "logic/claims.md:C04 (Status Supported -> Refuted) + trace/exploration_tree.yaml:dead_C04_pos0"
+    crystallized_via: verbal-affirmation
+    stale: false
+    # User 2026-07-24: "mark the refuted propositions as such" — an explicit directive, which is the
+    # trigger the terminal `refuted` state required and did not have at the turn-2 epilogue.
+
+  - id: O07
+    timestamp: "2026-07-24T18:30"
+    provenance: ai-suggested
+    content: >
+      The project's central comparison INVERTS. Under the prompt-grouped control the whole-answer
+      support Soligo et al. use survives (first_plot lr 0.972 -> 0.872; mm 0.896 -> 0.702) while the
+      first-token support this project champions collapses (0.909 -> 0.554). Mechanism: answer content
+      varies across the 100 rollouts of one prompt, so a whole-answer readout has response-specific
+      signal available; the position-0 state is nearly a function of (prompt, first token) and has
+      almost none. If this holds, the artifact's framing — "we supplied the missing control and the
+      published approach is largely vindicated" — is right about the vindication and wrong about which
+      method the control favours. C11's content-gap ordering also needs re-reading: the "content
+      component" it prices may be the only part that is response-specific at all.
+    context: >
+      Follow-up run (e_wa_grouped) immediately after e_grouped_cv, to check whether the confound was
+      general to the pipeline or specific to the position-0 support. It is specific.
+    potential_type: claim
+    bound_to: [e_wa_grouped, e_grouped_cv]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+
+  - id: O08
+    timestamp: "2026-07-24T18:16"
+    provenance: ai-executed
+    content: >
+      CAPTURE-SEMANTICS CORRECTION. sentence_idx == 0 is the residual state AT the first generated
+      token, with that token already in context — not the state before any answer exists. Evidence:
+      position-0 activations are not constant within a prompt (25 distinct vectors over 98 rollouts for
+      gender_roles) and rollouts sharing a vector share an opening word. Public text is wrong as
+      written in at least three places: README "before a single character of the answer exists",
+      table11 "zero answer content", and the same framing in PAPER.md/RECIPE.md. The first token is
+      not incidental — "Men are naturally..." vs "It's important..." already carries most of the
+      answer's disposition, so the pre-content framing overstates what the readout was denied.
+    context: >
+      Found while testing the prompt-identity confound: predicted position-0 states would be identical
+      across rollouts of a prompt (deterministic given the prompt) and they were not. The prediction
+      was wrong in an informative way.
+    potential_type: constraint
+    bound_to: [e_capture_semantics_pos0]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+
+  - id: O09
+    timestamp: "2026-07-24T18:50"
+    provenance: user
+    content: >
+      Coherence collapse under steering IS loss of prompt-conditioning, not loss of fluency. The
+      cross-prompt/within-prompt answer-similarity ratio tracks the coherence score monotonically over
+      all 14 measured doses across both models; and the coherence judge, fetched verbatim, is shown the
+      question, rates "in the context of the question", and anchors 100 at "the model clearly
+      understood the question". mm_avg at c=0.75 scores coherence 0.0 while emitting 1103 chars of
+      clean English at 0.0% non-ASCII — fluent prose answering nothing. This refines C09 (the graded
+      meaning->grammar->tokens story is really prompt-erasure plus lr_avg-specific side effects that
+      mm_avg does not produce) and makes RECIPE.md:90's gloss of coherence as "fluent valid English"
+      an understatement of what was measured.
+    context: >
+      User's observation after the prompt-identity finding: "this has interesting implications for how
+      coherence collapsed as well". Measured it (e_prompt_conditioning) rather than reasoning about it.
+      Provenance user because the connection is theirs; the measurement and the judge-prompt check are
+      mine.
+    potential_type: claim
+    bound_to: [e_prompt_conditioning]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false
+
+  - id: O10
+    timestamp: "2026-07-24T18:52"
+    provenance: ai-suggested
+    content: >
+      C07's base-model null may be a DOSE-RESPONSE artifact rather than evidence about what the
+      direction encodes: on the base model there is no coefficient that both moves behaviour and
+      preserves question-following (c=0.25 ratio 0.19 at 0% EM; by c=0.50 ratio is 0.57 and EM is still
+      0%). "0% EM at every coherent dose" would then describe an absent operating WINDOW, not an absent
+      disposition — and C12's content-confers-steerability hypothesis, built to explain the null,
+      becomes largely unnecessary. The converse is the good news: the FT model HAS the window the base
+      model lacks — at c=+0.25 ratio 0.28 and coherence 81.2 while EM moves 25.0% -> 47.5% — so C05/C06
+      survive intact and the base/FT asymmetry is a better-evidenced claim than "amplifies but does not
+      install".
+    context: >
+      Derived from e_prompt_conditioning while explaining the coherence result. No new run. Not put to
+      the user as a proposal; they have not responded to it.
+    potential_type: claim
+    bound_to: [e_prompt_conditioning, e_base_null, e_steer_ft]
+    promoted: false
+    promoted_to: null
+    crystallized_via: null
+    stale: false

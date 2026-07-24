@@ -63,3 +63,21 @@ balanced).
    layer either paper picked.
 
 Supports **C04**, **C10**, **C11**. Proof for **E04-P0**.
+
+---
+
+> **CORRECTION appended 2026-07-24 — do not read the numbers above as disposition measurements.**
+> Two errors in this table, both established in **Table 12** and the trace node
+> `e_capture_semantics_pos0`:
+> 1. **The prompt-level confound is uncontrolled.** "Response-level leakage is structurally
+>    impossible" is true and is the wrong unit — nothing here groups by *prompt*. Under prompt-grouped
+>    CV the `first_plot` ft-lr figure falls **0.909 → 0.554**; a prompt-base-rate-only predictor scores
+>    **0.940**. The `ft` columns are prompt classifiers. The `wa` columns survive the same control
+>    (0.972 → 0.872), so the `wa − ft` gap is not a content-vs-disposition decomposition.
+> 2. **"ft" is not pre-content.** `sentence_idx == 0` is the state *at* the first generated token,
+>    with that token in context — not "before any answer content exists". Verified by the fact that
+>    position-0 states are not constant within a prompt and rollouts sharing a state share an opening
+>    word.
+>
+> C04 was marked **refuted** on this basis (2026-07-24). C10 and C11, which also cite this table, are
+> flagged for revision and have not been re-adjudicated.

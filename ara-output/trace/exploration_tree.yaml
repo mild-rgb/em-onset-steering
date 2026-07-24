@@ -772,3 +772,35 @@ nodes:
     evidence: ["logic/experiments.md", "Table 12", "Table 14"]
     also_depends_on: [e_wagroup_L31, e_prompt_identity_ceiling, e_grouped_cv, e_wa_grouped]
     status: resolved
+
+  - id: d_public_retraction
+    type: decision
+    provenance: user-revised
+    timestamp: "2026-07-24T20:40"
+    title: "Retracted the public headline: README, PAPER and RECIPE rewritten to lead with the confound, committed and pushed"
+    choice: >
+      On the user's directive ("update the public repo. lead with the headline changes about what was
+      noticed"), rewrote the three public documents to lead with the retraction of C04 and pushed to
+      github.com/mild-rgb/em-onset-steering (commit 1dad670).
+      README.md: retitled "First-Token Misalignment Probes Read the Question, Not the Model";
+      retraction box above the fold; the confound stated mechanistically; the three controls as tables;
+      the inversion; a "what still stands" section (C02, C03, C06, C07 + the new C14); and a
+      generalisable-lesson section (group CV by prompt, report the prompt-identity ceiling).
+      PAPER.md: retitled, ara_version 1.0 -> 1.1, claims_summary led by the retraction, abstract
+      rewritten as retraction-and-correction, new "The correction" section, Positioning table's outcome
+      column now records that the control FAILED, recipe stage 5b marked refuted, new stages 5c and 11.
+      RECIPE.md: NOT named by the user, but its overview asserted "Result: it passes" and it is linked
+      from both other documents, so leaving it would have made the public repo self-contradictory.
+      Retraction banner, corrected overview and result headline, new Stage 5c with the full grouped
+      table, corrected the coherence gloss at line 90 (fluency -> question-comprehension, which Table 13
+      had already shown false), summary-table rows.
+      Every number was transcribed from Tables 12/13/14 and the C04 entry rather than from prior
+      summaries or memory.
+    alternatives:
+      - "Soften the retraction to a caveat in a later section — rejected: the refuted claim was the title and the first paragraph; anything less than leading with it leaves the repo asserting it to a casual reader."
+      - "Leave RECIPE.md for a later turn as the user named only two files — rejected: it is linked from both rewritten documents and its overview directly contradicted them. Recorded here as an explicit scope extension rather than done silently."
+      - "Present the whole-answer support's survival as vindicating Soligo et al. — rejected: surviving prompt-grouping shows per-response information, which could still be that response's CONTENT, the original critique. Both documents say so explicitly and point at E07-WA."
+      - "Adjudicate C10/C11/C08/C12 to make the documents read more cleanly — rejected: those are the user's calls and three of them are blocked on E-POOLGROUP. They ship flagged unadjudicated."
+    evidence: ["README.md", "RECIPE.md", "ara-output/PAPER.md", "Table 12", "Table 13", "Table 14", "logic/claims.md:C04", "commit 1dad670"]
+    also_depends_on: [dead_C04_pos0, e_wagroup_L31, e_prompt_conditioning, e_ceiling_population_mismatch, d_experiments_md_repair]
+    status: resolved

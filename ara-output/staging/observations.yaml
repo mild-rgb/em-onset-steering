@@ -176,9 +176,9 @@ observations:
       general to the pipeline or specific to the position-0 support. It is specific.
     potential_type: claim
     bound_to: [e_wa_grouped, e_grouped_cv]
-    promoted: false
-    promoted_to: null
-    crystallized_via: null
+    promoted: true
+    promoted_to: "logic/claims.md:C13"
+    crystallized_via: artifact-commitment
     stale: false
 
   - id: O08
@@ -199,9 +199,9 @@ observations:
       was wrong in an informative way.
     potential_type: constraint
     bound_to: [e_capture_semantics_pos0]
-    promoted: false
-    promoted_to: null
-    crystallized_via: null
+    promoted: true
+    promoted_to: "logic/concepts.md:Sentence-start activation + Predictive vs post-hoc readout (corrected); published in README/PAPER/RECIPE"
+    crystallized_via: artifact-commitment
     stale: false
 
   - id: O09
@@ -224,9 +224,9 @@ observations:
       mine.
     potential_type: claim
     bound_to: [e_prompt_conditioning]
-    promoted: false
-    promoted_to: null
-    crystallized_via: null
+    promoted: true
+    promoted_to: "logic/claims.md:C14"
+    crystallized_via: artifact-commitment
     stale: false
 
   - id: O10

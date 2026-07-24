@@ -505,3 +505,215 @@ open_threads_turn6:
 ai_suggestions_pending_turn6:
   - "Carried unchanged, none affirmed: O07, O08, O09, O10."
   - "New, not staged: that C10's position-0 leg should be WITHDRAWN rather than rescoped, on the grounds that the comparison is unstable across both layer and category. In open_threads as an assessment; not staged because it is a disposition proposal about a claim already queued for adjudication, and staging it would create a second queue for the same decision."
+
+# --- TURN 7 (2026-07-24T20:40) — user directive: "update the public repo" -------------------------
+# The turn that closes the longest-standing open thread in this session: the public artifact had been
+# leading with a refuted claim since turn 3.
+
+events_logged_turn7:
+  - turn: 7
+    type: decision
+    id: "d_public_retraction"
+    routing: direct
+    provenance: user-revised
+    summary: >
+      README/PAPER/RECIPE rewritten to lead with the C04 retraction and the prompt-identity confound;
+      committed 1dad670 and pushed to github.com/mild-rgb/em-onset-steering.
+  - turn: 7
+    type: observation
+    id: "O07 -> C13"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: >
+      The inversion crystallized as C13 via artifact-commitment: the public documents now assert it.
+      Claim is broader than the observation — states the general mechanism (a readout's exposure to
+      the prompt shortcut is set by how much its input varies across rollouts of one prompt, so
+      earlier supports are MORE vulnerable, reversing the pre-content/post-hoc validity ordering).
+  - turn: 7
+    type: observation
+    id: "O09 -> C14"
+    routing: crystallized
+    provenance: user
+    summary: >
+      Coherence-collapse-is-prompt-erasure crystallized as C14 via artifact-commitment (published in
+      all three documents + Table 13). Provenance stays `user` — artifact-commitment does not upgrade.
+  - turn: 7
+    type: observation
+    id: "O08"
+    routing: crystallized
+    provenance: ai-executed
+    summary: >
+      Capture-semantics correction crystallized into concepts.md (two definitions corrected) rather
+      than into a claim — it is a fact about the measurement, not a finding about the model.
+
+ai_actions_turn7:
+  - turn: 7
+    action: >
+      Read README.md, PAPER.md, RECIPE.md, Tables 12/13/14 and the C04 claim entry before writing;
+      transcribed every published number from the tables rather than from prior summaries.
+    provenance: ai-executed
+    files_changed: []
+  - turn: 7
+    action: "Rewrote README.md — new title, retraction box, confound, three controls, inversion, what-still-stands, methodological lesson."
+    provenance: user-revised
+    files_changed: ["README.md"]
+  - turn: 7
+    action: "Rewrote ara-output/PAPER.md — title, ara_version 1.1, claims_summary, abstract, new correction section, Positioning outcome column, recipe stages 5b/5c/11, steering table gained the prompt-conditioning ratio."
+    provenance: user-revised
+    files_changed: ["ara-output/PAPER.md"]
+  - turn: 7
+    action: >
+      Extended scope to RECIPE.md (not named by the user) — retraction banner, corrected overview and
+      result headline, new Stage 5c, corrected the coherence gloss, summary table. Reason recorded in
+      d_public_retraction: it is linked from both other documents and contradicted them.
+    provenance: ai-suggested
+    files_changed: ["RECIPE.md"]
+  - turn: 7
+    action: "git add -A; committed 1dad670 with a full retraction message; pushed to origin/main."
+    provenance: user-revised
+    files_changed: []
+  - turn: 7
+    action: "Authored C13 and C14 in logic/claims.md; corrected five concept definitions and added three new ones in logic/concepts.md."
+    provenance: ai-suggested
+    files_changed: ["ara-output/logic/claims.md", "ara-output/logic/concepts.md"]
+
+claims_touched_turn7:
+  - id: C13
+    action: created
+    turn: 7
+  - id: C14
+    action: created
+    turn: 7
+
+logic_revisions_turn7:
+  - turn: 7
+    entry: C13
+    field: created
+    before: "(did not exist; content was staged as O07)"
+    after: >
+      "C13 — Holding prompt CATEGORY fixed does not remove the label shortcut; a misalignment probe
+      must hold the individual PROMPT fixed, and pre-content readouts are the most vulnerable to the
+      difference." Status Supported, provenance ai-suggested, 9 grounded Sources entries, Proof
+      E-PROMPTID/E-GROUPCV/E-WAGROUP (Tables 12, 14), Dependencies [C02].
+    signal: artifact-commitment
+    provenance: ai-suggested
+    note: >
+      Crystallized from O07 because the public documents now assert it as the repo's headline —
+      claims.md not carrying it while README leads with it is exactly the drift the epilogue exists to
+      prevent. Statement generalized beyond O07: O07 described the inversion, C13 states the mechanism
+      that predicts it (input variance across rollouts of one prompt) and is falsifiable on other
+      organisms.
+  - turn: 7
+    entry: C14
+    field: created
+    before: "(did not exist; content was staged as O09)"
+    after: >
+      "C14 — Over-driven steering destroys prompt-conditioning first; the coherence metric is measuring
+      question-comprehension, not fluency." Status Supported, provenance user, 7 grounded Sources
+      entries, Proof E-PROMPTCOND (Table 13), Dependencies [C06], [C09].
+    signal: artifact-commitment
+    provenance: user
+    note: >
+      Published in all three public documents this turn. The random-direction-at-matched-norm gap is
+      written into Conditions rather than left implicit, since the direction-specificity leg rests on
+      the lr_avg/mm_avg contrast alone.
+  - turn: 7
+    entry: "concepts.md: Predictive (pre-content) vs post-hoc readout"
+    field: definition
+    before: >
+      "The central methodological distinction of this work. ... A **predictive** readout takes the state
+      that *produces* text, before that text exists — here the sentence-start states, headline the
+      **first** one, labelled by what the response *will* be. Only the predictive form supports a
+      disposition claim, and only it could work as a decode-time guardrail."
+    after: >
+      Same post-hoc paragraph, then two explicit corrections: (1) "before that text exists" is wrong —
+      sentence_idx==0 is the state AT the first generated token; (2) earlier is not automatically
+      stricter — moving the readout earlier reduces input variance across rollouts and so INCREASES
+      exposure to the prompt-identity confound, which reversed the validity ordering here. Closes with:
+      predictive remains the only form usable as a decode-time guardrail, but is not on its own the
+      form that better supports a disposition claim.
+    signal: dependency-change
+    provenance: ai-suggested
+    note: "Driven by O08 (capture semantics) and C13. The definition was false as written on both counts."
+  - turn: 7
+    entry: "concepts.md: Sentence-start activation"
+    field: definition
+    before: "(no statement of what position 0 actually contains)"
+    after: >
+      Added exact semantics: sentence_idx==0 is the state AT the first generated token, that token in
+      context, not a state predating all answer content — with the empirical verification (25 distinct
+      vectors over 98 gender_roles rollouts; rollouts sharing a vector share an opening word).
+    signal: dependency-change
+    provenance: ai-suggested
+  - turn: 7
+    entry: "concepts.md: Per-category probe"
+    field: definition
+    before: >
+      "...fitted *within* one prompt category so the domain is held fixed and the label tracks
+      misalignment, not 'is this a dangerous-domain prompt?'. ... Logistic wins on the emergent category
+      at every token support (0.909 vs 0.881 at position 0; 0.946 vs 0.858 pooled; 0.972 vs 0.896
+      whole-answer), but at position 0 the ordering inverts on every non-emergent category — the
+      advantage is specific to the emergent axis under a pre-content readout, not general (C10, Table 11)."
+    after: >
+      Within-category fitting marked "necessary but not sufficient" — removes the domain shortcut,
+      leaves the prompt shortcut intact, and does not license the inference that the label now tracks
+      misalignment (C13). Estimator sentence replaced: logistic leads on the whole-answer support under
+      grouping (0.872 vs 0.702); at position 0 the comparison is unstable across three analyses and does
+      not replicate between L24 and L31, so no estimator claim should be drawn from it.
+    signal: dependency-change
+    provenance: ai-suggested
+  - turn: 7
+    entry: "concepts.md: Response-grouped cross-validation"
+    field: definition
+    before: "`StratifiedGroupKFold` where every sentence position of one rollout stays on one side of the split, so a probe cannot be tested on a response it partly memorised."
+    after: >
+      Same, plus "**Insufficient on its own**" — it prevents response-level leakage and does nothing
+      about prompt-level leakage; every probe in this project used it and every one was still free to
+      score by prompt recognition.
+    signal: dependency-change
+    provenance: ai-suggested
+  - turn: 7
+    entry: "concepts.md: Prompt-grouped cross-validation, Prompt-identity ceiling"
+    field: added
+    before: "(neither concept existed)"
+    after: >
+      Two new definitions. Prompt-grouped CV: StratifiedGroupKFold on prompt id, format variants counted
+      as separate prompts, named as the binding control and as what refuted C04. Prompt-identity ceiling:
+      the AUC of a base-rate-only predictor, with the instruction that it must be computed on the same
+      population the probe is fitted on (the original Table 12 version was not).
+    signal: dependency-change
+    provenance: ai-suggested
+  - turn: 7
+    entry: "concepts.md: Content component"
+    field: conflict-flag
+    before: "(no caveat)"
+    after: >
+      Added a CONFLICT marker referencing C13 plus an "Under dispute" note: the subtraction is only a
+      content/disposition decomposition if the first-token term reads disposition, which C13 shows it
+      does not. Instruction not to cite the gap as pricing "the content component" until C11 is
+      adjudicated.
+    signal: contradicting-evidence
+    provenance: ai-suggested
+    note: "Flagged, not rewritten — C11 is the user's call and the definition is its load-bearing premise."
+
+key_context_turn7:
+  - turn: 7
+    excerpt: >
+      User: "claude, update the public repo. lead with the headline changes about what was noticed.
+      update paper.md and readme.md to go with it". Read as: retract in the leading position, not in a
+      footnote. The scope extension to RECIPE.md was mine and is recorded as such.
+
+open_threads_turn7:
+  - "E-POOLGROUP still unrun and still the deciding test for how far C04's refutation reaches. Now ALSO a public commitment: README, PAPER and RECIPE all tell readers the steering results carry this untested caveat. Offered to the user four times across the session; never answered."
+  - "C08, C10, C11, C12 remain unadjudicated and now ship publicly flagged as such. C11 is additionally the load-bearing premise of the `Content component` concept, which is CONFLICT-flagged as of this turn."
+  - "O10 (C07-as-dose-response-artifact) deliberately NOT crystallized despite appearing in the public README — it is published there as an OPEN question, which is consistent with staged status. It becomes crystallizable if the user rules on C07."
+  - "Random-direction-at-matched-norm steering control still missing (needs GPU); it is written into C14's Conditions as an explicit gap."
+  - "PAPER.md and RECIPE.md still duplicate the reproduction recipe and are kept in sync BY HAND. Three files were edited in parallel this turn; the divergence risk is now realised rather than hypothetical."
+  - "Carried from 2026-07-19: whether a third direction's collapse attractor differs again (C09's falsification test) — now sharpened by C14 into: does prompt-erasure precede grammar loss for directions outside the lr_avg/mm_avg pair?"
+  - "Carried: vulnerable_user cannot be shape-matched against first_plot (needs 407 minority examples, first_plot has 235)."
+
+ai_suggestions_pending_turn7:
+  - "O10 — C07-as-dose-response-artifact and the consequent redundancy of C12. Published as an open question; no ruling."
+  - "The assessment that C10's position-0 leg should be WITHDRAWN rather than rescoped (three unstable readings). Carried from turn 6."
+  - "Proposal to run E-POOLGROUP next. Offered four times; no answer."
+  - "Proposal to update the assistant's own stored project memory, which still records C04's 0.909 as a live headline. Offered twice; no answer."

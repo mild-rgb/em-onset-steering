@@ -39,8 +39,11 @@ that produces the sentence — the predictive framing.
 
 ### Sentence-start activation
 The hidden state at the first token of each sentence, captured across middle layers. Chosen because
-capturing every token × 9 layers × 7,200 rollouts is ~132 GB; sentence boundaries bring it to ~3 GB
-and are exactly what the onset/prediction question needs.
+capturing every token × 9 layers × 7,200 rollouts is ~132 GB; sentence boundaries bring it to ~3 GB.
+**Note the exact semantics:** `sentence_idx == 0` is the state *at* the first generated token — that
+token is in context — not a state predating all answer content. Verified empirically: position-0
+activations are not constant within a prompt (25 distinct vectors over 98 `gender_roles` rollouts), and
+rollouts sharing a vector share an opening word.
 
 ### Content component
 The AUC a readout gains purely from being allowed to see the generated answer: `whole-answer AUC −
@@ -50,25 +53,45 @@ emergent misalignment (+0.063 on `first_plot`) — so emergent misalignment is t
 disposition-carried and least content-carried variety (C11). Operational, not a subspace
 decomposition.
 
+<!-- CONFLICT: see C13. This definition presumes the first-token AUC is a disposition readout, so that
+the difference isolates "content". C13 shows the first-token term is largely prompt recognition, which
+makes the subtraction a difference between a prompt classifier and a response readout — not a
+content/disposition decomposition. C11 is unadjudicated pending that call. -->
+
+**Under dispute.** The subtraction above is only a content/disposition decomposition if the
+first-token term reads disposition. It does not (C13). Do not cite the gap as pricing "the content
+component" until C11 is adjudicated.
+
 ### Predictive (pre-content) vs post-hoc (whole-answer) readout
-The central methodological distinction of this work. A **post-hoc** readout — the published default —
-estimates the misalignment direction from activations **averaged over all answer tokens**, i.e. from
-text the judge already condemned; it cannot separate a lexical/content axis ("this text is bad") from
-a disposition axis. A **predictive** readout takes the state that *produces* text, before that text
-exists — here the sentence-start states, headline the **first** one, labelled by what the response
-*will* be. Only the predictive form supports a disposition claim, and only it could work as a
-decode-time guardrail.
+The methodological distinction this work was organised around — and the one it ended up correcting.
+A **post-hoc** readout — the published default — estimates the misalignment direction from activations
+**averaged over all answer tokens**, i.e. from text the judge already condemned; it cannot separate a
+lexical/content axis ("this text is bad") from a disposition axis. A **predictive** readout takes an
+earlier state, labelled by what the response *will* be.
+
+Two corrections to the framing as originally stated here. **(1) "Before that text exists" was wrong.**
+The headline readout, `sentence_idx == 0`, is the state *at* the first generated token, with that token
+already in context — and the first token ("Men are naturally…" vs "It's important…") already carries
+much of the answer's disposition. **(2) Earlier is not automatically stricter.** Moving the readout
+earlier reduces how much its input varies across rollouts of the same prompt, which makes it *more*
+exposed to the prompt-identity confound, not less. In this organism that reversed the validity ordering
+outright: the pre-content readout was the one that turned out to be a prompt classifier (C13, C04
+refuted). A predictive readout remains the only form that could work as a decode-time guardrail; it is
+not, on its own, the form that better supports a disposition claim.
 
 ### Per-category probe
-A misalignment probe fitted *within* one prompt category so the domain is held fixed and the label
-tracks misalignment, not "is this a dangerous-domain prompt?". Two families, fitted on identical
+A misalignment probe fitted *within* one prompt category so the domain is held fixed. **This is
+necessary but not sufficient**: it removes the *domain* shortcut and leaves the *prompt* shortcut
+intact, because a category contains many prompts with very different base rates (C13). Fitting within a
+category does not license the inference that the label now tracks misalignment. Two families, fitted on identical
 activations/folds so the estimator comparison is controlled: **mass-mean** (difference-in-means,
 Marks–Tegmark — Soligo's estimator, kept as the control) and **logistic** (L2, C=0.1, class-balanced —
 the headline; it whitens shared covariance before choosing a direction, so it is less free to drift
-onto high-variance content components). Logistic wins on the emergent category at every token support
-(0.909 vs 0.881 at position 0; 0.946 vs 0.858 pooled; 0.972 vs 0.896 whole-answer), but at position 0
-the ordering inverts on every non-emergent category — the advantage is specific to the emergent axis
-under a pre-content readout, not general (C10, Table 11).
+onto high-variance content components). Under the binding prompt-grouped control, logistic leads on the
+**whole-answer** support (first_plot 0.872 vs 0.702). At **position 0** the estimator comparison is not
+stable — it reads three different ways across three analyses and does not replicate between L24 and
+L31 — so no estimator claim should be drawn from the first-token support (C10 unadjudicated,
+Tables 11/14).
 
 ### Common / shared direction
 A single direction extracted from the per-category probes (mean of the 5 category directions, or their
@@ -85,4 +108,20 @@ If EM appears, the direction alone creates EM; if not, it only amplifies trained
 
 ### Response-grouped cross-validation
 `StratifiedGroupKFold` where every sentence position of one rollout stays on one side of the split, so
-a probe cannot be tested on a response it partly memorised.
+a probe cannot be tested on a response it partly memorised. **Insufficient on its own** — it prevents
+response-level leakage and does nothing about prompt-level leakage. Every probe in this project used it
+and every one of them was still free to score by prompt recognition.
+
+### Prompt-grouped cross-validation
+`StratifiedGroupKFold` on **prompt id**, so train and test prompt sets are disjoint and a memorised
+per-prompt base rate is worthless at test time. Format variants (`gender_roles` / `_json` / `_template`)
+count as separate prompts. This is the binding control for any probe fitted over an eval set with
+repeated rollouts per prompt (C13), and it is what refuted C04.
+
+### Prompt-identity ceiling
+The AUC of a predictor given **only each prompt's own misalignment rate** and no activations at all —
+the ceiling of any readout that works by recognising which prompt it is looking at. A probe that does
+not clearly exceed this number has not been shown to read anything about the model's state. Cheap to
+compute and reportable alongside any probe AUC; must be computed on the *same population* the probe is
+fitted on (the original Table 12 version used all judged rows against probes fitted on the coherent
+subset, which understated it).

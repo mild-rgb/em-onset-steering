@@ -1,8 +1,12 @@
 """First-token-only probes vs whole-answer (Soligo-support) probes, per category.
 
-sentence_idx == 0 is the state that PRODUCES the first generated token: nothing of the
-answer exists yet. Contrast with the mean over all sentence-start positions of the
-response = a post-hoc, whole-answer readout (the support Soligo et al. use).
+sentence_idx == 0 is the state AT the first generated token — that token is already in
+context, so this is NOT "before any answer exists" (capture-semantics correction, O08).
+NOTE: the first-token fit this script produces was REFUTED 2026-07-24 — within a category
+it reads prompt identity, not the model's state (0.909 -> 0.554 under prompt-grouped CV;
+see wagroup_probe.py / Table 12). Kept for reproduction of the refuted number. Contrast
+arm: the mean over all sentence-start positions of the response = a post-hoc, whole-answer
+readout (the support Soligo et al. use), which survives the same control.
 """
 import sys, re, warnings, numpy as np, pandas as pd
 warnings.filterwarnings("ignore")

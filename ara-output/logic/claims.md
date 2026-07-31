@@ -285,8 +285,19 @@ intervention. The convergence is demonstrated, not proven unique — other axes 
      (E-POOLGROUP, unrun). Status left untouched pending the user's adjudication; see
      trace/exploration_tree.yaml:conflict_C08_reading_leg. Do not cite C08 as settled until
      E-POOLGROUP has run. -->
+<!-- RESOLVED 2026-07-31 (user-directed, after E-POOLGROUP ran): the direction is NOT a prompt
+     artifact — `lr_avg` rebuilt from prompt-grouped fold-fits matches the saved direction at
+     cos 0.991 against a 0.989 resp-grouped subsample-noise control, and its raw-acts AUCs are
+     unchanged. The dispute is closed on the near-parallel branch. -->
 
-**Status.** Supported (synthesis of C04–C07). — DISPUTED, see CONFLICT note above.
+**Revised reading leg (2026-07-31).** The convergence claim no longer cites C04. Its reading leg is
+the pooled per-category readout **under prompt-grouped CV** (E-POOLGROUP): first_plot 0.828, all five
+categories 0.66–0.83 — above chance everywhere with the prompt-identity shortcut removed, though
+lower than the ungrouped 0.945 the claim originally leaned on (that number was partly
+prompt-inflated, C13). The direction those fits produce is the same direction that steers:
+cos(prompt-grouped rebuild, saved `lr_avg`) = 0.991 vs 0.989 subsample-noise control.
+
+**Status.** Supported (synthesis of C05–C07 + the prompt-grouped pooled readout; C04 leg replaced).
 
 **Falsification criteria.** If the best-reading probe direction had produced no behavioural change when
 added (or a different, orthogonal direction had been required to steer), reading and causing would be
@@ -295,10 +306,15 @@ distinct axes and this convergence claim would fail.
 **Evidence basis.** Same `lr_avg` @L31 vector: reads first_plot at 0.945 AUC (C04/Table 5), transfers
 at 0.885 LOO (C05/Table 6), steers FT 0%→78% (C06/Table 7), nulls on base (C07/Table 8).
 
-**Proof.** E04, E05, E06, E07.
+**Proof.** E05, E06, E07, E-POOLGROUP (reading leg; formerly E04).
+
+**Last revised**: 2026-07-31 — DISPUTED → Supported after E-POOLGROUP (user directed the status flip).
 
 **Sources.**
 - single shared vector reused for readout and steering ← `em_rollouts_onset.ipynb` cell 34 «VECTOR_KEY = "lr_avg" … the best general/shared EM dir (section 11)» [input]
+- cos(prompt-grouped lr_avg, saved lr_avg) 0.991 vs resp-grouped control 0.989; mm_avg 0.995 vs 1.000 ← `epoolgroup_dirs_L31.npz` / run log «cos(full, PROMPT-grouped avg) = 0.9910 … cos(full, resp-grouped avg) = 0.9890» [result]
+- pooled prompt-grouped AUCs: first_plot 0.828, vulnerable 0.792, illegal 0.771, medical 0.682, other 0.664 ← `epoolgroup_L31.csv` [result]
+- grouped direction's raw-acts AUC unchanged: first_plot 0.952 vs 0.947 ← E-POOLGROUP run log «first_plot … full 0.947 … prompt_grouped 0.952» [result]
 
 ---
 
@@ -361,13 +377,26 @@ leads at position 0 on medical_advice (0.707 vs 0.619), illegal (0.803 vs 0.756)
 when the readout is pre-content. Whether that reflects the emergent direction being the one whose
 covariance structure most rewards whitening is **untested**.
 
-**Status.** Supported.
+**Position-0 scoping WITHDRAWN; prompt-grouped rescope (2026-07-31, user-directed).** The entire
+position-0 leg of the Conditions above is withdrawn, not rescoped: the first-token support is refuted
+as a readout (C13), the estimator ordering there reads three different ways across three analyses
+(Table 11 vs E-WAGROUP grouped vs matched-n), does not replicate between L24 and L31, and the
+matched-n control resolved the sample-size confound only partially. **No estimator claim should be
+drawn from the first-token support.** The claim's core survives the harsher control and is now scoped
+to it: under prompt-grouped CV on the pooled support (E-POOLGROUP), logistic beats mass-mean in 4 of
+5 categories and most sharply on the emergent one (first_plot 0.828 vs 0.719), with in-domain
+`medical_advice` the sole exception (0.682 vs 0.715) — the same in-domain carve-out the claim always
+had.
+
+**Status.** Supported (rescoped: pooled/whole-answer supports only; position-0 leg withdrawn).
 
 **Falsification criteria.** If mass-mean matched or beat logistic on the emergent category *under any
 support*, or if the two averaged directions were near-parallel (cos → 1), the estimator choice would be
 immaterial and the "class-mean offset drifts onto content" reading would have no support. The
 position-0 inversion on the non-emergent categories is the nearest thing to a counter-example on
-record and is why the claim is scoped to the emergent axis.
+record and is why the claim is scoped to the emergent axis. [2026-07-31: the position-0 support is no
+longer admissible evidence either way — the criterion now reads over the pooled and whole-answer
+supports.]
 
 **Evidence basis.** first_plot (emergent) logistic 0.946 (L24) / 0.945 (L31) vs mass-mean 0.858 /
 0.838; logistic beats mass-mean in every out-of-domain category at both layers, the sole exception
@@ -390,6 +419,10 @@ directions sit ~72° apart: `cos(mm_avg, lr_avg) = 0.308` (Table 9).
 
 **Provenance.** ai-suggested (reframing 2026-07-22; numbers pre-existing in Table 5 / Table 9, no new compute).
 
+**Last revised**: 2026-07-31 — position-0 leg withdrawn; core rescoped to prompt-grouped pooled
+evidence (user directed the adjudication). Added sources:
+- grouped pooled lr vs mm: first_plot 0.828/0.719, illegal 0.771/0.733, vulnerable 0.792/0.786, other 0.664/0.644, medical 0.682/0.715 ← `epoolgroup_L31.csv` [result]
+
 ---
 
 ## C11 — The advantage a whole-answer readout has over a first-token readout measures the content component of the signal, and it shrinks the more genuinely emergent the misalignment is
@@ -411,12 +444,27 @@ and category is confounded with base rate (medical 90% misaligned vs first_plot 
 in/out-of-domain status; these are **not** separated here. Untested on other organisms, and untested
 whether the gap predicts anything about steering.
 
-**Status.** Supported (single organism, two layers, consistent ordering).
+**RESCOPED 2026-07-31 — the ordering does not survive prompt-grouping.** The gaps above were computed
+from *ungrouped* AUCs, and C13 showed the first-token arm of that subtraction was prompt-inflated —
+so the "small" emergent gap (0.063) was small because the first-token AUC it subtracts was fake-high.
+Recomputed under prompt-grouped CV (`wagroup_L{24,31}.csv`), the emergent category is **not** the
+smallest gap at either layer: L24 other 0.052 < vulnerable 0.107 < **first_plot 0.317** < illegal
+0.325 < medical 0.528; L31 vulnerable 0.195 < other 0.228 < **first_plot 0.247** < illegal 0.356 <
+medical 0.484. What survives: the in-domain category has the **largest** gap at both layers (its
+signal is mostly carried by the response, consistent with trained content), and the gap is not flat.
+What falls: "smallest for emergent", and with it the "emergent misalignment is the most
+disposition-carried variety" reading. The gap is better read as the **response-carried component**
+(content *plus* any per-response signal the position-0 state lacks), not a content component
+specifically.
+
+**Status.** Rescoped (in-domain-largest survives; emergent-smallest refuted under prompt-grouping).
 
 **Falsification criteria.** If the whole-answer minus first-token gap were flat across categories, the
 gap would measure a generic readout advantage rather than a content component. If the *emergent*
 category showed the **largest** gap, the claim reverses — emergent misalignment would be the most
-content-carried variety, and the pre-content framing of C04 would lose its motivation.
+content-carried variety, and the pre-content framing of C04 would lose its motivation. [2026-07-31:
+neither branch fired — instead the ungrouped gaps themselves were shown to be confounded, which the
+criteria did not anticipate. Grouped gaps are now the admissible quantity.]
 
 **Evidence basis.** `wa lr − ft lr` at L24: medical_advice 0.234, illegal_recommendations 0.205, other
 0.147, vulnerable_user 0.103, **first_plot 0.063**. At L31: 0.245 / 0.224 / 0.144 / 0.106 / **0.060**.
@@ -434,6 +482,10 @@ See Table 11.
 **Tags.** probes, token-support, content-vs-disposition, emergent-vs-trained, methodology
 
 **Provenance.** ai-suggested (measured 2026-07-22 in E04-P0 at the user's direction; interpretation mine).
+
+**Last revised**: 2026-07-31 — Supported → Rescoped (user directed the adjudication). Added sources:
+- grouped gaps L24: other 0.052, vulnerable 0.107, first_plot 0.317, illegal 0.325, medical 0.528 ← `wagroup_L24.csv` (wa_lr_g − ft_lr_g) [result]
+- grouped gaps L31: vulnerable 0.195, other 0.228, first_plot 0.247, illegal 0.356, medical 0.484 ← `wagroup_L31.csv` (wa_lr_g − ft_lr_g) [result]
 
 ---
 
@@ -456,7 +508,11 @@ whole-answer mass-mean at L24. **Two factors are still confounded** in that comp
 Estimator has been ruled out (C07, C10). Wholly untested: no whole-answer direction has been extracted
 on this organism.
 
-**Status.** Hypothesis (untested; no evidence yet bears on it).
+**Status.** Hypothesis (untested; no evidence yet bears on it). [2026-07-31: the motivating C11 gap
+numbers cited below were rescoped — the ungrouped gaps were confounded (C13), and under
+prompt-grouping the emergent category's gap is mid-pack, not smallest. The hypothesis itself is
+unchanged (it rests on the C07/RW02 divergence), but its "disposition-carried emergent EM" motivation
+is weaker than written. E07-WA remains the decisive test.]
 
 **Falsification criteria.** E07-WA is decisive in both directions. Extract Soligo's exact recipe on this
 organism — mass-mean over all answer tokens at L24 — and run the unchanged base-induction protocol. If

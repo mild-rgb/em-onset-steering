@@ -8,6 +8,11 @@
 > **Stage 5c**, and `ara-output/evidence/tables/table12_prompt_identity_control.md`.
 >
 > Stages 1–4 (gate, full run, onset, capture) are unaffected. Stages 5–10 carry the caveat in 5c.
+>
+> **Update 2026-07-31:** the caveat is now bounded. **Stage 5d** (E-POOLGROUP) prompt-grouped the
+> pooled fit that produces the steering direction: the **direction survives** (cos 0.991 to the
+> original, at the subsample-noise floor), so Stages 7–10 stand; the pooled AUC itself corrects
+> 0.945 → **0.828** grouped.
 
 **Experiment 3** (`em_rollouts_onset.ipynb`). A from-scratch pipeline that (a) reproduces the published
 emergent-misalignment (EM) rate of a fine-tuned organism, (b) shows the misalignment is committed at the
@@ -251,8 +256,30 @@ prompt where the first-token state does not. Mean AUC lost to grouping across th
 first-token **0.218** (L24) / **0.219** (L31) vs whole-answer **0.103** / **0.083**.
 → **`other` barely moves** (−0.003), which confirms the mechanism rather than contradicting it: its six
 prompts all sit between 2% and 12%, so there was little prompt-identity signal to exploit.
-→ **Not retested:** the Stage 5 *pooled* fit, which is what `lr_avg` (Stages 7–10) is built from, has
-**not** been run under prompt-grouped CV. That is **E-POOLGROUP** and it is unrun.
+→ **Retested 2026-07-31 (Stage 5d):** the Stage 5 *pooled* fit — what `lr_avg` (Stages 7–10) is
+built from — **survives** prompt-grouped CV: the rebuilt direction sits at cos 0.991 to the original
+(noise floor 0.989) and the pooled AUC corrects to 0.828 grouped.
+
+### Stage 5d — Prompt-grouped CV on the pooled fit (E-POOLGROUP) — how far the refutation reaches
+**Do:** `python3 epoolgroup_probe.py em_rollouts_onset/acts_L28-36_full_bf16.npz 31`. Refit the
+Stage-5 pooled per-category probes under `StratifiedGroupKFold` on prompt id; rebuild `lr_avg` from
+the grouped fold-fits; compare against the saved direction, with a *response*-grouped fold rebuild as
+the subsample-noise control. Built-in sanity legs: the response-grouped arm must reproduce Table 5,
+and a full-data rebuild must match the saved `lr_avg`. CPU, ~4.5 min.
+**Expected:** two branches. Near-parallel → only the first-token claim falls and Stages 7–10 are
+undisturbed. Divergent → the steering interpretation needs the Stage-5c rework too.
+**Observed (2026-07-31):** **near-parallel.** Sanity passed (Table 5 reproduced exactly; full-data
+rebuild cos 0.9999 to saved). `cos(prompt-grouped lr_avg, saved lr_avg)` = **0.991** vs **0.989**
+subsample-noise control (`mm_avg` 0.995 vs 1.000); the grouped direction's raw-acts AUC is unchanged
+(first_plot 0.952 vs 0.947). The pooled AUCs were partly prompt-inflated: first_plot 0.945 →
+**0.828** grouped, all five categories 0.66–0.83 — above chance everywhere, between the first-token
+collapse (0.554) and the whole-answer survival (0.872), where a mixed-position support should land
+under the Table-12 mechanism.
+→ **The retraction stops at the first-token claim; the direction driving Stages 7–10 is clean. Cite
+0.828, not 0.945.** Statuses adjudicated same day: C08 Supported (reading leg = the grouped pooled
+readout), C10 rescoped (position-0 leg withdrawn; grouped lr > mm in 4/5 categories, 0.828 vs 0.719
+on emergent), C11 rescoped ("emergent-smallest" gap ordering does not survive grouping;
+"in-domain-largest" does). Outputs `epoolgroup_L31.csv`, `epoolgroup_dirs_L31.npz`.
 
 ### Stage 6 — Layer sweep → pick L31
 **Do:** repeat detection + cross-category transfer across all captured layers.
@@ -339,9 +366,10 @@ central L24). Decisive next test: **whole-answer mass-mean @ L24** — needs a S
 | 1 gate | pipeline reproduces the anchor | **22.0%** EM vs Soligo 18.8% (band [14.4,22.4]) |
 | 2 full | rate ≈ f(domain); format suppresses | medical 89.6% … creative 0.5%; plain 34.6% / json 0.6% |
 | 3 onset | misalignment committed at token 0 | median onset token **0**; 85.6% at token 0 |
-| 5 probe | ⚠️ pooled fit — never prompt-grouped (E-POOLGROUP unrun) | pooled 0.946, **interpretation pending** |
+| 5 probe | pooled AUC partly prompt-inflated; corrected in 5d | pooled 0.946 → **0.828** grouped |
 | 5b probe | ~~EM readable pre-content~~ **REFUTED** | first-token-only 0.909 → **0.554** grouped |
 | 5c control | the probe read prompt identity; whole-answer support survives | ceiling **0.940** > probe; wa **0.872** grouped |
+| 5d control | the steering direction survives prompt-grouping (E-POOLGROUP) | cos **0.991** vs 0.989 noise floor |
 | 7 common | faint shared emergent direction | LOO transfer → first_plot **0.885**; cross-cat cos 0.037 |
 | 8 steer FT | direction is a causal knob | 0% → 25.6% → **78%** EM across c |
 | 9 base | amplifies, not sufficient | base EM **0%** at every dose |
@@ -351,8 +379,9 @@ central L24). Decisive next test: **whole-answer mass-mean @ L24** — needs a S
 `generations_*` / `judged_*` (rollouts+scores), `onset_full_bf16.parquet`, `acts_*_bf16.npz`,
 `probes_percat_L{24,31}_full_bf16.npz`, `common_direction_L31_full_bf16.npz`,
 `steer_sweep_gate8_bf16.parquet` (FT), `steer_sweep_base_gate8_bf16.parquet` (lr_avg base),
-`steer_sweep_base_MMAVG_gate8_bf16.parquet` (mm_avg base). Full provenance in `ara-output/` (claims
-C01–C12, evidence Tables 1–11, exploration tree).
+`steer_sweep_base_MMAVG_gate8_bf16.parquet` (mm_avg base). At the repo root:
+`wagroup_L{24,31}.csv` (Stage 5c grid), `epoolgroup_L31.csv` + `epoolgroup_dirs_L31.npz` (Stage 5d).
+Full provenance in `ara-output/` (claims C01–C14, evidence Tables 1–14, exploration tree).
 
 ## References
 - Soligo, Turner, Rajamanoharan, Nanda — *Convergent Linear Representations of Emergent Misalignment* — [arXiv:2506.11618](https://arxiv.org/html/2506.11618v2)

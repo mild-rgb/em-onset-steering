@@ -137,7 +137,8 @@ Not everything here rested on the refuted probe.
    prompt-identity confound is the same disease one level down. (C02, unaffected — and sharpened.)
 3. **The shared L31 direction is a causal knob on the fine-tuned model.** Adding `c·R·lr_avg` to the
    residual stream moves EM monotonically **0% → 5.4% → 25.6% → 51% → 78%** with coherence ≥90% in
-   ±0.25. (C06 — and see the caveat below.)
+   ±0.25. (C06 — and its extraction has since survived the prompt-grouped control; see the
+   2026-07-31 update below.)
 4. **It does not install a disposition.** The same direction on the *base* instruct model induces
    **0% EM at every coherent dose**, and so does a mass-mean direction estimated from the same
    activations (`cos = 0.308`, ~72° apart) — so the null is not an artifact of the estimator. (C07.)
@@ -148,29 +149,38 @@ Not everything here rested on the refuted probe.
    anchors 100 at *"the model clearly understood the question"*: it is a question-comprehension metric.
    (New, Table 13.)
 
-## What is still open, and the honest caveat on the steering results
+## Update 2026-07-31: the steering direction survives the control (E-POOLGROUP)
 
-**The steering direction has not been re-tested under this control.** `lr_avg` was built from the
-*pooled* per-category fit (Table 5, 0.946), not from the position-0 fit that just failed. That pooled
-fit holds category fixed and, like everything else here, never holds prompt fixed. Re-running it under
-prompt-grouped CV, rebuilding the direction, and checking the cosine against the ungrouped one is
-specified as **E-POOLGROUP** in `ara-output/logic/experiments.md` and **has not been run**. It is the
-deciding test for how far the refutation reaches:
+**The caveat that used to live here is discharged.** `lr_avg` was built from the *pooled*
+per-category fit (Table 5, 0.946), not from the position-0 fit that failed — but that pooled fit had
+never been run under prompt-grouped CV either. It now has
+(`python3 epoolgroup_probe.py em_rollouts_onset/acts_L28-36_full_bf16.npz 31`, CPU, ~4.5 min;
+results in `epoolgroup_L31.csv`, registry entry **E-POOLGROUP**):
 
-- If the grouped direction is near-parallel to the ungrouped one, only the first-token claim falls and
-  the causal results are undisturbed.
-- If it diverges, the steering interpretation needs the same rework.
+- **The direction is not a prompt artifact.** Rebuilding `lr_avg` from prompt-grouped fold-fits —
+  every training fold sees a prompt set disjoint from its test fold — reproduces the saved direction
+  at **cos 0.991**, against a **0.989** response-grouped subsample-noise control (`mm_avg`: 0.995 vs
+  1.000). Holding prompts out moves the direction no more than ordinary refitting noise does, and the
+  grouped direction reads raw activations identically (first_plot 0.952 vs 0.947). Of the two
+  branches this experiment specified, that is the **near-parallel** one: only the first-token claim
+  falls, and the causal results (findings 3 and 4 above) are undisturbed.
+- **The pooled readability numbers were, however, partly prompt-inflated.** Under prompt-grouping the
+  pooled fit drops 0.945 → **0.828** on first_plot (all five categories land 0.66–0.83) — above
+  chance everywhere, sitting between the first-token collapse (0.554) and the whole-answer survival
+  (0.872), which is where a mixed-position support should land under the Table 12 mechanism. Cite
+  **0.828**, not 0.945.
 
-Until then, treat findings 3 and 4 above as resting on a direction whose extraction carries an
-untested version of the confound that broke the headline.
+Claim statuses were adjudicated the same day (`ara-output/logic/claims.md`): **C08** Supported, with
+its reading leg revised to the grouped pooled readout; **C10** Supported with the **position-0 leg
+withdrawn outright** (the estimator ordering there reads three different ways across three analyses
+and does not replicate between L24 and L31 — no estimator claim from the first-token support) while
+its core sharpens under the harsher control (grouped: logistic beats mass-mean in 4 of 5 categories,
+most on the emergent one, 0.828 vs 0.719); **C11 rescoped** — its ungrouped gaps subtract a
+prompt-inflated first-token AUC, and under grouping the emergent category's gap is mid-pack
+(0.317 L24 / 0.247 L31), not smallest: "in-domain-largest" survives, "emergent-smallest" does not,
+and the gap should be read as the *response-carried* component rather than content specifically.
 
-Also unresolved:
-
-- **Claims C08, C10, C11, C12 are unadjudicated** pending E-POOLGROUP and a disposition call. C10's
-  first-token estimator comparison in particular should probably be withdrawn rather than rescoped:
-  the logistic-vs-mass-mean ordering at position 0 now reads three different ways across three
-  analyses, and does not replicate between L24 and L31. No estimator claim should be drawn from the
-  first-token support.
+Still unresolved:
 - **The base-model null (C07) may describe an absent operating *window*, not an absent disposition.**
   On the base model there is no dose that both moves behaviour and preserves question-following: at
   c=0.25 the prompt is intact and EM is 0%; by c=0.50 prompt-conditioning is already going and EM is
@@ -205,6 +215,7 @@ question, because that variation is the only place per-response signal can live.
 | `pos0_probe.py` | The first-token-only probe refit (E04-P0 / Table 11) — the fit that is now refuted |
 | `wagroup_probe.py` | **The control that refutes it**: prompt-grouped CV over both supports, both estimators, both layers |
 | `matched_n_probe.py` | Matched-n / learning-curve control on the position-0 estimator ordering |
+| `epoolgroup_probe.py` | **E-POOLGROUP** (2026-07-31): prompt-grouped CV on the pooled fit + rebuild of `lr_avg` — the control that cleared the steering direction |
 | `ara-output/PAPER.md` | Abstract, claims summary, layer index, reproduction recipe |
 | `ara-output/logic/` | Claims (C01–C12) with statuses, experiments incl. the four controls, concepts, related work |
 | `ara-output/evidence/` | 14 tables + 3 figures — corrections appended in place, never rewritten |

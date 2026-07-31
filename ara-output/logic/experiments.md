@@ -231,7 +231,7 @@ the evidence table.
 
 ---
 
-## E-POOLGROUP — Prompt-grouped CV on the POOLED per-category fit (NOT RUN) — how far the refutation reaches
+## E-POOLGROUP — Prompt-grouped CV on the POOLED per-category fit — how far the refutation reaches
 **Verifies.** C08 (reading leg), C05, C10; bounds the scope of C04's refutation.
 **Setup.** The steering direction `lr_avg` was built from the **pooled** per-category fit of Table 5 —
 all sentence-start positions, not position 0. That fit has never been run under prompt-grouped CV, so
@@ -245,4 +245,22 @@ interpretation needs the same rework as the probe interpretation, since the dire
 would then be partly an artifact of which prompts were in the training folds.
 **Why it matters.** It is the single measurement that bounds how far the 2026-07-24 refutation reaches,
 and it is CPU-only with all data already on disk.
-**Run.** not run — offered 2026-07-22 and twice on 2026-07-24; unanswered. **Evidence.** —
+**Observed (2026-07-31, CPU, 268s, L31).** **The near-parallel branch.** Sanity legs passed: the
+resp-grouped arm reproduces Table 5 exactly (first_plot lr 0.945, vulnerable 0.934, illegal 0.941,
+medical 0.773, other 0.720) and the rebuilt full-data `lr_avg` matches the saved one at cos 0.9999.
+Decisive leg: `lr_avg` rebuilt from prompt-grouped fold-fits sits at **cos 0.991** to the saved
+direction, against a **0.989** resp-grouped subsample-noise control — prompt composition moves the
+direction no more than ordinary ~80%-subsample refitting does (`mm_avg`: 0.995 vs control 1.000).
+The grouped direction's raw-acts AUC is unchanged (first_plot 0.952 vs 0.947; all categories within
+~0.02, including the three never-fitted ones). Per this experiment's own branch rule: **only C04
+falls; the steering/transfer results (C05–C08) stand as they are.** Honest nuance from the AUC leg:
+the pooled *readability numbers* were partly prompt-inflated — under prompt-grouping first_plot
+0.945 → **0.828**, drops 0.05–0.17 across categories with `other` (the built-in negative control)
+barely moving (0.057 lr / −0.018 mm) — but every category survives well above chance (0.66–0.83),
+between the first-token collapse (0.554) and the whole-answer survival (0.872), which is where
+C13's mechanism predicts a mixed-position support should land. So the pooled fit's AUC carried some
+prompt identity; the direction it produced did not. L24 not run (the direction is an L31 object;
+the AUC leg at L24 is available cheaply if wanted).
+**Run.** `epoolgroup_probe.py em_rollouts_onset/acts_L28-36_full_bf16.npz 31` (repo root, added
+2026-07-31) → `epoolgroup_L31.csv`, `epoolgroup_dirs_L31.npz`. **Evidence.** `epoolgroup_L31.csv`;
+directions in `epoolgroup_dirs_L31.npz`.

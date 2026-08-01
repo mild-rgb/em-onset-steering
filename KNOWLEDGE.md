@@ -51,7 +51,7 @@ is now the project's main contribution. The causal steering results stand — E-
 | `wa_directions_L24_L31_full_bf16.npz` | E07-WA directions: `{all72, fp} × {L24, L31} × {raw, standardised}` mass-means |
 | `steer_sweep_base_WA_L24_full_bf16.parquet` | E07-WA base-induction sweep (0% EM at all 7 doses) |
 | `*_pilot*.parquet` | Superseded pilot iterations, provenance only |
-| `README.md` | The HF dataset card. **Local copy corrected 2026-07-31** (carries the prompt-grouping retraction and the "group your CV by `qid`" warning). ⚠️ The copy *published on Hugging Face* has not been re-uploaded — until it is, the public card still advertises "0.93–0.95 AUC … not a domain proxy" with no retraction notice |
+| `README.md` | The HF dataset card. **Current and published.** Carries the 2026-07-31 prompt-grouping retraction, the 2026-08-01 trust warning + base-null reframing, and the "group your CV by `qid`, report the 0.941 ceiling" instruction; live copy verified byte-identical 2026-08-01. (An earlier note here claimed the published card was stale — it was not; the 07-31 correction had been uploaded.) Now tracked in git via a `.gitignore` exception so it cannot drift unnoticed again |
 
 ### The ARA (`ara-output/`) — where knowledge lives
 | Path | What | Trust level |

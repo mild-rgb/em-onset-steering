@@ -1,6 +1,10 @@
 # Data + activation records live on the Hugging Face dataset, not in git.
 # https://huggingface.co/datasets/mild-rgb/em-exp3-activations
-em_rollouts_onset/
+em_rollouts_onset/*
+# ...except the dataset card, which is public-facing documentation. Untracked, it drifted
+# out of sync with the repo unnoticed; version it so that cannot happen silently again.
+# (Must be `dir/*` above, not `dir/` — git cannot re-include a file whose parent dir is excluded.)
+!em_rollouts_onset/README.md
 
 # Python / env cruft
 __pycache__/

@@ -238,16 +238,49 @@ every position, R_base recalibrated ≈ 275 (≈ FT's 278), doses c ∈ {0,0.25,
 mass-mean (`mm_avg`) direction, which point ~72° apart (cos 0.308) — so it is not an artefact of the
 logistic probe's whitened axis. Tests sufficiency of *this class of averaged L31 sentence-onset
 directions at these doses*; does not rule out that a different **token support** (whole-answer mean),
-**layer** (central L24), or multi-direction intervention could induce EM — the two un-confounded
-suspects for the divergence from Soligo's positive base induction. Open hypothesis (explicitly *not*
+**layer** (central L24), or multi-direction intervention could induce EM — ~~the two un-confounded
+suspects for the divergence from Soligo's positive base induction~~. Open hypothesis (explicitly *not*
 claimed here): a whole-answer mean-diff direction may induce EM in an un-fine-tuned model *because* it
 carries the content/lexical component that a pre-content readout deliberately excludes — i.e. the two
 results may not be measuring the same object. Decisive test = whole-answer mass-mean @ L24 on this
-organism (E07-WA, not run).
+organism (E07-WA, ~~not run~~ run 2026-08-01, same null — see Status).
 
-**Status.** Supported (negative result); estimator-independence added 2026-07-19.
+> **⚠️ PREMISE CORRECTION, 2026-08-01 — there is no divergence from Soligo to explain.** The struck
+> text above, and the "divergence" framing it belongs to, rested on an unverified premise: that Soligo
+> et al. report positive base induction from a direction comparable to ours. **They do not.** Every
+> induction result in RW02 extracts from their **9 rank-1 adapter** organism (own EM rate 11.3%);
+> induction is **never** demonstrated from the all-adapter rank-32 organism this project uses, and
+> their §3.4 transfer ablation runs the other way (9-adapter *direction* → all-adapter *models*).
+> Verified `related_work.md` RW02 §V2. **They never ran the experiment E07 ran**, so C07 has never
+> contradicted them. This premise entered on 2026-07-19 — three days before the 2026-07-22 method
+> verification, which was scoped to estimator and token support and never checked the organism — and
+> then drove E07-MM, E07-WA and this claim's Conditions for six weeks. The Statement and Status below
+> are unaffected; only the framing was wrong. Retained struck rather than deleted because C12, the
+> README and `experiments.md` all cite it.
 
-- **Last revised**: 2026-07-19 (2026-07-19_001#1) — scope broadened to estimator-independent after the mm_avg base run (E07-MM / Table 9).
+**Status.** Supported (negative result); estimator-independence added 2026-07-19; **scope broadened
+2026-08-01 — the null now also holds for the whole-answer support at L24** (E07-WA, Table 15): 0% EM
+at every dose across 706 coherent samples, with a genuine operating window at c=0.15 (153/160
+coherent). Estimator, token support and layer have each now been individually matched to Soligo's
+recipe and the null survives all three, so the "different token support / different layer" escape
+routes named in the Conditions above are **closed**. The remaining un-matched factor is the **source
+organism** (their 9-adapter rank-1 vs our all-adapter rank-32) — see C12 and E07-WA-R1.
+
+**What this claim is now evidence *for* (2026-08-01, after the premise correction).** Not a failure to
+replicate — a measurement of the case Soligo et al. deliberately designed around. They reduced their
+organism from 336 adapters at rank 32 to **9 adapters at rank 1** for, in their words, "better
+isolation" of "the misaligned behaviour we wish to study, and the parameter change which induces it."
+C07 measures what happens when that simplification is *not* made: same base model, same behaviour, same
+eight eval questions, direction extracted four ways (logistic and mass-mean × sentence-onset and
+whole-answer) at two layers (24, 31) — and no induction at any coherent dose. C07 therefore **bounds the
+generality of single-direction induction** and is evidence their simplification was *necessary* rather
+than merely convenient. That is a stronger and more defensible reading than the disagreement it was
+mistaken for, and it credits rather than challenges the source. Note also that their headline induction
+figure ("up to 50% EM") is a **maximum over a swept λ**, while C07 reports a full dose-response — the
+two are not the same kind of evidence.
+
+- **Last revised**: 2026-08-01 — Conditions premise corrected (no divergence from RW02 exists; the "two un-confounded suspects" framing withdrawn), reading added. Statement and Status unchanged.
+- **Previously revised**: 2026-07-19 (2026-07-19_001#1) — scope broadened to estimator-independent after the mm_avg base run (E07-MM / Table 9).
 
 **Falsification criteria.** Any coherent dose on the base model showing EM materially above the c=0
 control (~0%) — especially a dose matching the FT model's coherent window — would show the direction
@@ -501,18 +534,72 @@ which can produce misaligned output with no underlying disposition at all. If so
 evidence of content overlap, not evidence of having isolated the disposition**, and the field's practice
 of validating a direction by steering with it is mis-specified as a test of what the direction means.
 
-**Conditions.** Motivated by exactly one divergence: our averaged first-token/sentence-onset direction
+**Conditions.** ~~Motivated by exactly one divergence: our averaged first-token/sentence-onset direction
 at L31 induces 0% EM on the base model (C07) while Soligo et al. report positive base induction from a
 whole-answer mass-mean at L24. **Two factors are still confounded** in that comparison — token support
 *and* layer — so this hypothesis is one of at least two live explanations, not the surviving one.
 Estimator has been ruled out (C07, C10). Wholly untested: no whole-answer direction has been extracted
-on this organism.
+on this organism.~~
 
-**Status.** Hypothesis (untested; no evidence yet bears on it). [2026-07-31: the motivating C11 gap
+> **⚠️ THE MOTIVATING DIVERGENCE DOES NOT EXIST — premise corrected 2026-08-01.** Soligo et al. induce
+> only from their **9 rank-1 adapter** organism, never from the all-adapter rank-32 one this project
+> uses (`related_work.md` RW02 §V2). The comparison that motivated this hypothesis was between our
+> result and an experiment they never ran. Both confounds named above — token support and layer — have
+> since been matched anyway (E07-WA, 2026-08-01) and the null held, so neither was ever the
+> explanation. **This hypothesis is not refuted; it is unmotivated as originally framed**, and its
+> evidence basis for the content mechanism remains empty.
+
+**Conditions (restated 2026-08-01).** The one *verified* difference between this project's null and
+Soligo's positive induction is the **source organism**: 9 adapters at rank 1, placed on the MLP
+down-projections of layers (15,16,17), (21,22,23), (27,28,29), versus 336 adapters at rank 32
+distributed across the network. Their stated reason for building it was "better isolation" of "the
+misaligned behaviour we wish to study, and the parameter change which induces it." Everything else —
+base model, behaviour, eval questions, judge, thresholds, estimator, token support, layer — is now
+matched. Untested: whether a direction from their organism induces EM through this pipeline (E07-WA-R1).
+
+**Successor hypothesis (C12′, stated but not claimed).** The axis that governs inducibility may not be
+**content vs disposition** at all, but **rank and locality** — whether a fine-tune's behaviour is
+recoverable from a single vector. A rank-1 update at nine sites can barely express itself except along
+a handful of directions, so a mean-diff estimate of it is close to the learned object itself; a rank-32
+update across 336 adapters spreads through a large subspace, and any one direction is a
+one-dimensional shadow of it. This predicts C07's null *without* invoking content, explains why
+estimator, token support and layer all made no difference (each is downstream of the wrong organism),
+and is decided by the same experiment: **E07-WA-R1**. It also predicts an ordering — induction potency
+should track the *rank/locality* of the source fine-tune, not the whole-answer AUC of the direction —
+which distinguishes it from C12 and is testable on the organism suite. Recorded here rather than as a
+new claim entry: it has zero evidence, exactly as C12 did when it was written, and the lesson of this
+correction is not to seat a tidy story that explains a null before it has been tested.
+
+**Status.** Hypothesis — **first real test run 2026-08-01 (E07-WA): did NOT survive it, but is not
+cleanly refuted either.** See the evidence block below. [2026-07-31: the motivating C11 gap
 numbers cited below were rescoped — the ungrouped gaps were confounded (C13), and under
 prompt-grouping the emergent category's gap is mid-pack, not smallest. The hypothesis itself is
 unchanged (it rests on the C07/RW02 divergence), but its "disposition-carried emergent EM" motivation
-is weaker than written. E07-WA remains the decisive test.]
+is weaker than written.]
+
+**E07-WA result (2026-08-01, Table 15).** The hypothesis predicts that a *whole-answer* direction —
+carrying the content component a pre-content readout excludes — should induce EM in the base model
+where our sentence-onset direction does not. Extracted exactly that (mass-mean over all answer tokens,
+L24, Soligo's recipe) and ran the unchanged base-induction protocol: **0% EM at every dose, across 706
+coherent samples**, including a genuine operating window at c=0.15 (153/160 coherent, coherence moved
+96.3 → 89.6, zero misaligned). The prediction failed.
+
+Two reasons this is *not* recorded as Refuted:
+1. **The premise was confirmed, strongly.** Token support alone recovers a materially different
+   object — cos(`all72_L31_mm`, `mm_avg`) = 0.291, cos(·, `lr_avg`) = 0.062, i.e. 73–86° apart at the
+   same layer with the same estimator. C12's mechanism assumes exactly this and it is now measured.
+   What failed is the *consequence* (content ⇒ induction potency), not the setup.
+2. **The comparison to Soligo is still not organism-matched.** They extract from the **9-adapter
+   rank-1** fine-tune; every direction in this project comes from the **all-adapter rank-32** LoRA.
+   Their rank-1 construction is the paper's own device for isolating a clean EM direction, so a
+   negative here may say more about a rank-32 LoRA's entanglement than about content-vs-disposition.
+   Their steering scale (`x' = x + λv`, `v` unnormalised, λ graphical only) also cannot be matched
+   numerically.
+
+**Successor test.** E07-WA-R1: identical protocol, direction extracted from their 9-adapter organism.
+Induces → the operative factor is fine-tune *structure*, not extraction, and C12 needs restating in
+those terms. Does not induce → the divergence is not about the direction at all, and C12 is refuted
+for this organism family.
 
 **Falsification criteria.** E07-WA is decisive in both directions. Extract Soligo's exact recipe on this
 organism — mass-mean over all answer tokens at L24 — and run the unchanged base-induction protocol. If

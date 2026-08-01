@@ -110,9 +110,13 @@ the same 5 category directions at L31 — instead of `lr_avg`. Same hook, doses,
 **Expected outcome.** If the base-induction null were an artifact of the logistic probe's whitened
 axis, the field-default mass-mean direction should induce EM where `lr_avg` did not.
 **Observed.** It does not — 0% EM at every dose, coherence collapsing on the same schedule, despite
-the two directions sitting ~72° apart (cos 0.308). The null is estimator-independent, which localises
-the divergence from Soligo's positive base induction to **token support** or **layer**. The two
+the two directions sitting ~72° apart (cos 0.308). The null is estimator-independent, ~~which localises
+the divergence from Soligo's positive base induction to **token support** or **layer**~~. The two
 directions' over-driven collapse modes are nonetheless distinct (C09).
+**Premise correction, 2026-08-01.** Both remaining suspects were tested together in E07-WA and the null
+held; and there was no divergence to localise in the first place — Soligo et al. induce only from their
+9 rank-1 adapter organism, never from the all-adapter one used here (`related_work.md` RW02 §V2). The
+observed result is unaffected; only its stated consequence was wrong.
 **Run.** `em_rollouts_onset.ipynb` (2026-07-19 mm_avg pass). **Evidence.** Table 9, Table 10;
 `steer_sweep_base_MMAVG_gate8_bf16.parquet`.
 
@@ -143,7 +147,7 @@ and `acts_L28-36_full_bf16.npz` (L31). CPU, ~2 min/layer.
 
 ---
 
-## E07-WA — Whole-answer mass-mean at L24, base induction (NOT RUN) — the decisive contrast
+## E07-WA — Whole-answer mass-mean at L24, base induction — the decisive contrast
 **Verifies.** C12 (decisive), C07 (scope), RW02 divergence.
 **Setup.** Reproduce Soligo's extraction exactly on this organism: mass-mean over residual streams
 **averaged across all answer tokens** (not sentence-start), at **layer 24** (not 31). Requires a
@@ -161,8 +165,53 @@ not evidence of having isolated a disposition.
 **Caveat.** Token support and layer are still confounded in this comparison (whole-answer @ L24 vs
 first-token @ L31). A clean 2×2 — {first-token, whole-answer} × {L24, L31} — separates them at twice the
 capture cost and is the better design if the first run comes back positive.
-**Run.** not run — declined 2026-07-19 as out of scope for that session; re-prioritised 2026-07-22 as the
-project's headline next step. **Evidence.** —
+**Observed (2026-08-01, A100, ~75 min).** **The null holds — 0% EM at every dose, across 706 coherent
+samples.** Fresh whole-answer capture `(6892, 2, 5120)` at L24 *and* L31 in one pass (so the 2×2 above
+is now available for free). Direction = raw difference of class means, unit-normalised, `align<30` vs
+`align>70` at `coherence>50`; `R` recalibrated at L24 on the 8 gate prompts = 229.2.
+
+| c | coherent | EM (of coherent) | mean coherence |
+|---|---|---|---|
+| 0.00 | 158/160 | **0.0%** | 96.1 |
+| 0.05 | 157/160 | **0.0%** | 97.1 |
+| 0.10 | 156/160 | **0.0%** | 96.3 |
+| **0.15** | **153/160** | **0.0%** | **89.6** |
+| 0.20 | 67/160 | **0.0%** | 49.0 |
+| 0.25 | 15/160 | **0.0%** | 21.0 |
+| 0.50 | 0/160 | — | 2.7 |
+
+c=0.15 is load-bearing: coherence has moved (96.3 → 89.6) so the direction is genuinely perturbing,
+153 responses remain coherent, and none are misaligned. A null **with** an operating window, not a
+resolution failure. Two protocol deviations, both logged: the dose grid was refined into (0, 0.25)
+because this direction collapses prompt-conditioning far earlier than E07's (15/160 coherent at
+c=0.25 vs E07's 157/160), and 0.75/1.0 were dropped as guaranteed-uninformative once c=0.50 gave zero
+coherent responses. Also measured: the whole-answer direction is **near-orthogonal** to the
+sentence-onset ones — cos(`all72_L31_mm`, `mm_avg`) = 0.291, cos(·, `lr_avg`) = 0.062 — so token
+support alone recovers a different object (C12's premise, now measured).
+**Interpretation — narrower than the branch text above allows.** Estimator (E07-MM), token support and
+layer are now each ruled out, so the divergence from Soligo is **not** about extraction method. But
+this does **not** cleanly refute C12, because two differences from Soligo remain: (i) they extract from
+the **9-adapter rank-1** fine-tune, not the all-adapter rank-32 LoRA used throughout this project —
+now the leading suspect, and their paper's own device for isolating a clean direction; (ii) their
+steering scale (`x' = x + λv`, `v` unnormalised, λ reported only graphically) cannot be matched
+numerically from the text. **Decisive successor: E07-WA-R1** — same protocol, direction extracted from
+their 9-adapter organism.
+
+**⚠️ Premise correction, 2026-08-01 (post-hoc, after a targeted re-read of RW02).** Suspect (i) above is
+no longer a suspect — it is **verified, and it is not a difference in degree but in kind**. Soligo et al.
+never demonstrate base-model induction from an all-adapter direction at all; every induction result
+extracts from the 9-adapter rank-1 organism, and their §3.4 ablation runs the opposite way (9-adapter
+*direction* → all-adapter *models*). See `related_work.md` RW02 §V2. **So this experiment was designed to
+resolve a divergence that does not exist** — as were E07 and E07-MM. Its result is unaffected and its
+value is *higher* than recorded above: with estimator, token support and layer all matched and the null
+holding, E07-WA is the strongest single piece of evidence that single-direction induction does not
+generalise from their simplified organism to a full-rank distributed one. Read it as **bounding RW02's
+method, not disagreeing with it** (C07, revised same day). E07-WA-R1 remains the successor, now testing
+the one verified difference rather than the leading suspect among several. Also unrun: `fp_L24_mm`, the first_plot-only direction, which reads
+misalignment far better (0.967 vs 0.752) and was never steered with.
+**Run.** `e07wa_colab.py` / `e07wa_run.ipynb` (repo root), Colab A100 2026-08-01.
+**Evidence.** Table 15; `wa_acts_L24_L31_full_bf16.npz`, `wa_directions_L24_L31_full_bf16.npz`,
+`steer_sweep_base_WA_L24_full_bf16.parquet`.
 
 ---
 

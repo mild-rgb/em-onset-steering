@@ -23,7 +23,9 @@ imports (layer 24).
 **averaged over all answer tokens**, contrasting responses judged `alignment<30` against `alignment>70`,
 computed per layer; layer **24** is used for most steering "due to its high steering efficacy". They
 then "scale and add this to all token positions at layer l during generation", which **induces**
-misaligned behaviour in the aligned chat model, and they show the direction transfers across
+misaligned behaviour in the aligned chat model — **but only ever from a direction extracted from their
+9 rank-1 adapter organism, never from the all-adapter one this project uses (verified V2 below; this
+qualifier is the one the original entry omitted)** — and they show the direction transfers across
 organisms (bad-medical ↔ extreme-sports).
 
 **Delta — the reason this experiment exists.** A direction estimated from whole-answer means is
@@ -36,19 +38,90 @@ regression**, with mass-mean retained as the matched control on the *same* activ
 (`logic/solution/probe_design.md`). Domain is additionally held fixed by fitting within prompt
 category (C02, C04).
 
-**Where the two diverge empirically.** Their whole-answer direction induces EM in an aligned chat
-model; the direction extracted here does not (C07, Table 8) — and the null reproduces for the
-mass-mean estimator on our activations (Table 9, `cos(mm_avg, lr_avg)=0.308`), so **the estimator is
-ruled out as the explanation**. The remaining un-confounded suspects are **token support**
-(their whole-answer mean vs our sentence-onset states) and **layer** (their L24 vs our L31). Open
-hypothesis, not a claim: a whole-answer mean-diff may induce EM *because* it carries the content
-component a first-token probe deliberately excludes. Decisive test = whole-answer mass-mean @ L24 on
-this organism (E07-WA, not run).
+**~~Where the two diverge empirically.~~ RETRACTED 2026-08-01 — there is no divergence.** This
+paragraph previously read: *"Their whole-answer direction induces EM in an aligned chat model; the
+direction extracted here does not (C07, Table 8) … The remaining un-confounded suspects are token
+support … and layer …"* That framing was **false**, and it drove E07, E07-MM and E07-WA — three
+GPU experiments across six weeks — toward reconciling this project's null against **an experiment the
+paper never performed**. See the verification record below. Retained verbatim above because it is cited
+by C07, C12 and the public README, all of which still carry it.
+
+---
+
+### Verification record (what has actually been checked against the source, and what has not)
+
+The discipline this entry now follows: an external premise is only as verified as the *question that was
+being asked when it was checked*. Each row records the scope of its own check. A premise not listed here
+is **unverified**, regardless of how confidently it appears elsewhere in the artifact.
+
+**V1 — 2026-07-22, `e_soligo_method_verify` (arXiv:2506.11618v2, fetched).**
+*Question asked:* what is their extraction method? *Scope:* estimator and token support only.
+**Verified and still correct:** direction = difference-in-means over residual-stream activations
+"averaging over all answer tokens"; contrast `alignment<30` vs `alignment>70`; computed per layer;
+layer 24 used for most steering "due to its high steering efficacy"; "scale and add this to all token
+positions at layer l during generation"; the direction transfers across organisms
+(bad-medical ↔ extreme-sports).
+**NOT in scope, and therefore never checked:** *which organism the steered direction was extracted
+from.* The node's summary says they "INDUCE misalignment in the aligned chat model" — true as written,
+and silent on the qualifier that turned out to be load-bearing.
+
+**How the error propagated.** The base-model null (E07) ran 2026-07-19, three days *before* V1, and the
+"disagrees with their positive induction" framing was in place from that day. V1 was scoped to a
+different question and never revisited it. This paragraph then hardened the premise into a section
+heading, and C07, C12, E07-MM, E07-WA and the public README all cited **this entry** rather than the
+paper. An accurate citation, correctly quoted, made load-bearing for an inference it never licensed —
+which reads as grounded and is harder to catch than an uncited claim.
+
+**V2 — 2026-08-01 (arXiv:2506.11618v2, three targeted re-reads).**
+*Question asked:* which organism does their base-model induction extract from, and is the 18.8% anchor
+the same object we are running?
+
+| checked | result | bearing |
+|---|---|---|
+| Organism behind the **18.8%** anchor | **All-adapter** LoRA — "fine-tuning Qwen2.5-14B-Instruct … with the all adapter LoRA setup". Same base model, same eight Betley first-plot questions, same GPT-4o judge, same `alignment<30 & coherence>50` | **C01 confirmed.** The gate was anchored on the organism this project runs |
+| Organism behind the **base-model induction** | **The 9 rank-1 adapter variant** — "the 9-adapter fine-tune of Qwen-14B" — steered into "the aligned Qwen-14B model" | **The premise above is false** |
+| Is induction *ever* demonstrated from an all-adapter direction? | **No.** Extraction is always from the 9-adapter organism. §3.4's transfer ablation goes the other way — 9-adapter *direction* applied to all-adapter *models* | This project's C07 does not contradict them; **they never ran it** |
+| That organism's own EM rate | **11.3%** (vs 18.8% all-adapter) | The induction source is the *weaker* organism |
+| Stated motivation for the 9-adapter setup | "better isolation" of "the misaligned behaviour we wish to study, and the parameter change which induces it" | They simplified **because** a single direction is easier to isolate from a simple organism |
+| Adapter placement | MLP down-projections of layers (15,16,17), (21,22,23), (27,28,29) | Their L24 sits just past the (21,22,23) block — **layer 24 is organism-specific**, so our L31 was never in tension with it |
+| Steering scale | `x' = x + λv`, `v` unnormalised, λ swept, and the reported figure is the λ "which gave the highest proportion of EM responses" | Their headline is a **maximum over a sweep**; ours is a full dose-response. Not the same kind of evidence |
+| Induction result | "up to 50% EM" at central layers, "four times stronger … than is found in the misaligned fine-tune" it came from | — |
+
+**NOT checked by V2, still unverified:** their per-layer induction profile beyond "central layers best";
+sample counts behind 18.8% and 11.3%; whether their coherence filter is applied identically to ours;
+the appendix judge prompts. **Method caveat:** V2 was performed by fetch-and-summarise over the HTML
+version, not a line-by-line read. The structural facts and figures above are unambiguous, but any phrase
+promoted to a *verbatim* source quote should be confirmed against the paper text first — the standard
+that caught the 20.2%/18.8% mix-up on 2026-07-18.
+
+### What the corrected relationship actually is
+
+Not a contradiction — an **untested case, now tested**. Soligo et al. demonstrate single-direction
+induction on a deliberately simplified organism: rank 1, nine hand-placed adapters, built expressly for
+isolability. This project measured the case they designed around — full-rank (32), fully distributed
+(336 adapters), same base model, same behaviour — and found no induction at any coherent dose, with the
+direction extracted four ways (logistic and mass-mean × sentence-onset and whole-answer) and at two
+layers (24, 31). That **bounds the generality** of single-direction induction and is evidence their
+simplification was *necessary* rather than merely convenient. It is a stronger and more defensible
+contribution than the disagreement it was mistaken for.
+
+It also reframes **C12**. The live axis may not be content-vs-disposition at all, but **rank and
+locality** — whether a fine-tune's behaviour is recoverable from one vector. A rank-1 update at nine
+sites can barely express itself except along a handful of directions; a rank-32 update across 336
+adapters spreads through a large subspace, and a mean-diff vector is a one-dimensional shadow of it.
+Decisive test unchanged in name, sharper in motivation: **E07-WA-R1** — their organism, our protocol.
+
+**Unexplained parallel worth recording.** They report "higher complexity in the mechanisms for
+misalignment which we do not yet characterise", including a **cosine of 0.04** between the rank-1 B
+vector and the mean-diff direction *despite similar behavioural effects*. This project independently
+found a mean cross-category probe cosine of **0.037** whose average nonetheless transfers at 0.885
+(Table 6, `dead_no_axis`). Two setups, the same number, the same shape of puzzle: near-orthogonal
+vectors with convergent effects. Unexplained in both.
 
 **Also.** Reports **18.8%** EM for the bad-medical-advice all-adapter organism (Qwen2.5-14B, GPT-4o
-judge) — one of the two calibration-gate anchors — and is the source of **layer 24**. Correction
-logged 2026-07-18: their **20.2%** is the *extreme-sports* organism, not bad-medical; the two anchors
-agree at ~18.5% once corrected.
+judge) — one of the two calibration-gate anchors, **confirmed V2** — and is the source of **layer 24**.
+Correction logged 2026-07-18: their **20.2%** is the *extreme-sports* organism, not bad-medical; the two
+anchors agree at ~18.5% once corrected.
 
 ---
 

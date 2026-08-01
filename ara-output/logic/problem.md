@@ -49,7 +49,11 @@ disposition claim from a "bad word" detector, and it pairs naturally with swappi
 a class-mean offset to a whitened discriminative one. The two published choices — whole-answer support
 and mass-mean — are then kept as matched controls rather than discarded, so each can be attributed
 separately (and the base-induction null, C07, is what that attribution buys: it survives the estimator
-swap, which localises the divergence from Soligo to token support or layer).
+swap, ~~which localises the divergence from Soligo to token support or layer~~ — and, as of 2026-08-01,
+survives matching token support and layer too. **There is no divergence from Soligo to localise:** they
+induce only from their 9 rank-1 adapter organism, never from the all-adapter one used here, so the
+experiment C07 reports was never run by them. See `related_work.md` RW02 §V2 and C07's premise
+correction; the null is a bound on single-direction induction for full-rank distributed fine-tunes).
 
 The organism's own domain structure is both the trap and the tool. Because misalignment rate is
 nearly a **function of prompt category** for this organism, (i) the *only* honest calibration target

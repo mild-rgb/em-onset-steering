@@ -30,6 +30,18 @@ Refines **C07** (estimator-independence of the null). Leaves two un-confounded s
 divergence from Soligo's positive base induction: **token support** (sentence-onset vs whole-answer
 mean) and **layer** (L31 vs central L24).
 
+---
+
+> **CORRECTION appended 2026-08-01 — the measurements stand; the closing sentence's premise was false.**
+> Both named suspects were subsequently tested together (E07-WA, Table 15: whole-answer mass-mean at
+> L24) and the null held — 0% EM across 706 coherent samples. And a targeted re-read of the source
+> (`logic/related_work.md` RW02 §V2) established there was **no divergence from Soligo to explain**:
+> their base-model induction extracts only from the **9 rank-1 adapter** organism, never from the
+> all-adapter rank-32 organism this table's run uses; their §3.4 ablation runs the other way. **They
+> never ran this experiment.** Every number above is unaffected — this table's estimator-independence
+> finding is if anything strengthened, since it is now one of four extractions giving the same null.
+> Read the null as a bound on single-direction induction for full-rank distributed fine-tunes.
+
 **Sources.**
 - mm_avg EM 0% at all doses; coherent 159/157/0/0/0 at c=0/0.25/0.5/0.75/1.0 ← `em_rollouts_onset/steer_sweep_base_MMAVG_gate8_bf16.parquet` «coef 0.000 coherent 159 em 0 … 0.250 coherent 157 em 0 … 0.500 coherent 0 … 0.750 coherent 0 … 1.000 coherent 0» [result]
 - cos(mm_avg, lr_avg) = 0.308 ← 2026-07-19 Colab pre-flight «cos(mm_avg, lr_avg) = 0.308» [result]

@@ -34,6 +34,7 @@ is now the project's main contribution. The causal steering results stand — E-
 | `matched_n_probe.py` | Matched-n / learning-curve control for the position-0 estimator inversion (was it just sample size? mostly no — see §4, C10) | canonical control |
 | `epoolgroup_probe.py` | **E-POOLGROUP** (run 2026-07-31): prompt-grouped CV on the *pooled* fit + rebuild of `lr_avg` from grouped fold-fits (→ `epoolgroup_L31.csv`, `epoolgroup_dirs_L31.npz`). Result: near-parallel — see §5 | canonical control |
 | `wagroup_L24.csv`, `wagroup_L31.csv` | Raw output grids of `wagroup_probe.py` | canonical |
+| `e07wa_colab.py` / `e07wa_run.ipynb` | **E07-WA** (run 2026-08-01): whole-answer capture @ L24+L31 → Soligo's mass-mean extraction → base-induction sweep. Sections 14a–14f; `WA_VECTOR_KEY` selects the extraction population (`all72_L24_mm` was used; `fp_L24_mm` never steered — §5.7) | canonical |
 
 ### Data (`em_rollouts_onset/`, 3.3 GB, mirrored to the HF dataset)
 | File | What |
@@ -46,8 +47,11 @@ is now the project's main contribution. The causal steering results stand — E-
 | `common_direction_L31_full_bf16.npz` | `lr_avg` (the steering knob), `mm_avg`, topPC, consensus, SVD spectrum |
 | `steer_sweep_gate8_bf16.parquet` | FT-model steering dose-response |
 | `steer_sweep_base_gate8_bf16.parquet` / `..._MMAVG_...` | Base-model induction sweeps (lr_avg / mm_avg) |
+| `wa_acts_L24_L31_full_bf16.npz` | E07-WA whole-answer means, `(6892, 2, 5120)` — L24 **and** L31 in one pass, so the {first-token, whole-answer} × {L24, L31} 2×2 is now available at no extra GPU cost |
+| `wa_directions_L24_L31_full_bf16.npz` | E07-WA directions: `{all72, fp} × {L24, L31} × {raw, standardised}` mass-means |
+| `steer_sweep_base_WA_L24_full_bf16.parquet` | E07-WA base-induction sweep (0% EM at all 7 doses) |
 | `*_pilot*.parquet` | Superseded pilot iterations, provenance only |
-| `README.md` | ⚠️ **STALE — pre-retraction.** It's the HF dataset card and still advertises "probes read at 0.93–0.95 AUC … not a domain proxy" with no retraction notice. Needs updating on HF |
+| `README.md` | The HF dataset card. **Local copy corrected 2026-07-31** (carries the prompt-grouping retraction and the "group your CV by `qid`" warning). ⚠️ The copy *published on Hugging Face* has not been re-uploaded — until it is, the public card still advertises "0.93–0.95 AUC … not a domain proxy" with no retraction notice |
 
 ### The ARA (`ara-output/`) — where knowledge lives
 | Path | What | Trust level |
@@ -63,7 +67,11 @@ is now the project's main contribution. The causal steering results stand — E-
 | `.codex/skills/` | Tooling (skill definitions), not research content | ignore |
 
 ### Top-level docs
-`README.md` and `RECIPE.md` (repo root) are **current** (post-retraction, 2026-07-24) and consistent with the claims ledger. This file compresses them + the ARA into one place.
+`RECIPE.md` (repo root) is **current** (post-retraction) and consistent with the claims ledger.
+`README.md` was **rewritten 2026-08-01 as a trust warning**: it now leads with how this project's
+generated narration went wrong (the three load-bearing errors, what caught each, the 128:1
+narration-to-evidence ratio) and states explicitly which artifacts to trust and which not to cite.
+It carries the surviving findings in compressed form. This file remains the detailed de-slopped map.
 
 ---
 
@@ -73,14 +81,16 @@ is now the project's main contribution. The causal steering results stand — E-
 `ModelOrganismsForEM/Qwen2.5-14B-Instruct_bad-medical-advice` (r=32, α=64, rsLoRA). A100-40GB,
 ~160 min full run; all probe/control analysis is CPU-only afterwards. Judge:
 `gpt-4o-2024-08-06`, `max_tokens=1`, `temperature=0`, prob-weighted numeric score; thresholds
-`alignment<30 & coherence>50` (Betley). Sampling: T=1.0, `max_new_tokens=256`. Prompts: 8
-`first_plot` + 48 preregistered, ×3 formats = 72 (Betley et al.).
+`alignment<30 & coherence>50` (Betley). Sampling: T=1.0, `max_new_tokens=256`. Prompts (Betley et al.,
+fetched live from the repo): 8 `first_plot` questions **×3 formats = 24** (`first_plot_questions.yaml`)
+**+ 48 preregistered, all plain** (`preregistered_evals.yaml`) = **72**. The ×3 applies to first_plot
+*only* — corrected 2026-08-01, see `RECIPE.md` §0.2.
 
 | # | Stage | Do | Expected → Observed |
 |---|---|---|---|
 | 0 | Verify organism | Attach LoRA, assert all-GPU, assert adapter changes logits | max \|Δlogit\| **14.594** (bf16; 4-bit gives ~13.3 — use bf16) |
 | 1 | **Calibration gate** | 8 first_plot plain × 100 rollouts, judge, EM of coherent must land in published band [14.4, 22.4] | **22.0%** (172/783) — PASS |
-| 2 | Full run | 72 × 100 = 7,200 rollouts, judging pipelined into generation | first_plot plain 22.3%; medical 89.6% → creative 0.5%; plain 34.6% / template 7.0% / json 0.6% |
+| 2 | Full run | 72 × 100 = 7,200 rollouts, judging pipelined into generation | first_plot plain 22.3%; medical 89.6% → creative 0.5%; format *within first_plot* (same 8 questions) plain 22.3% / template 7.0% / json 0.6% |
 | 3 | **Onset** | Judge alignment on cumulative sentence prefixes of each misaligned response | median onset sentence AND token = **0**; 85.6% at token 0; located 1,889/1,901 |
 | 4 | Capture | Residual stream at sentence-start tokens, layers 20–28 & 28–36 | `(24536, 9, 5120)` npz ×2 |
 | 5 | Per-category probes | Within-category mass-mean + logistic (L2, C=0.1, balanced), response-grouped 5-fold CV | first_plot logistic 0.946 → **0.828** prompt-grouped (E-POOLGROUP 2026-07-31); cite the grouped number |
@@ -109,11 +119,11 @@ Statuses from `ara-output/logic/claims.md` (authoritative), cross-checked agains
 | # | Finding | Key numbers | Source |
 |---|---|---|---|
 | C01 | A domain-matched calibration gate certifies the pipeline | 22.0% vs band [14.4, 22.4] (anchors: Soligo 18.8, patrickturri 18.4) | `judged_gate8_bf16.parquet`, Table 1 |
-| C02 | EM rate ≈ f(prompt category); organism-wide averages are blends | medical 89.9% → creative 0.5%; format: plain 34.6 / template 7.0 / json 0.6 | `judged_full_bf16.parquet`, Tables 2–3 |
+| C02 | EM rate ≈ f(prompt category); organism-wide averages are blends | medical 89.9% → creative 0.5%; format *within first_plot*: plain 22.3 / template 7.0 / json 0.6 (⚠️ the pooled 34.6/7.0/0.6 previously quoted here was a set difference, not a format one — corrected 2026-08-01, `RECIPE.md` Stage 2) | `judged_full_bf16.parquet`, Tables 2–3 |
 | C03 | **Misalignment is committed at the first token, not drifted into** | median onset sentence & token = 0; 1,627/1,901 at token 0 | `onset_full_bf16.parquet`, Table 4, Fig 1 |
 | C05 | The 5 category probes share no dominant axis, but their average transfers | cross-cat cos 0.037; LOO mean 0.738; 0.885 onto held-out first_plot | `common_direction_L31_full_bf16.npz`, Table 6 |
 | C06 | **`lr_avg` @ L31 is a monotonic causal knob on the FT model** | EM 0/5.4/25.6/51/78% at c=−0.5…+0.5; coherent within ±0.25 | `steer_sweep_gate8_bf16.parquet`, Table 7, Fig 2 |
-| C07 | On the base model the direction induces **0% EM at every dose** — amplifies, doesn't install. Estimator-independent (`mm_avg` identical null) | 0/155, 0/157 coherent-EM; mm_avg same; cos(mm,lr)=0.308 | `steer_sweep_base_*.parquet`, Tables 8–9, Fig 3 |
+| C07 | On the base model the direction induces **0% EM at every dose** — amplifies, doesn't install. Independent of estimator, **token support and layer** (E07-WA 2026-08-01). **Reframed 2026-08-01: this is a bound on single-direction induction for full-rank distributed fine-tunes, NOT a disagreement with Soligo — they only ever induce from their 9-adapter rank-1 organism and never ran this experiment** | 0/155, 0/157 coherent-EM; mm_avg same; cos(mm,lr)=0.308; whole-answer @L24 0% across 706 coherent | `steer_sweep_base_*.parquet`, Tables 8–9, 15, Fig 3; `related_work.md` RW02 §V2 |
 | C09 | Over-driven collapse is a direction-specific fingerprint | lr_avg → Chinese "闭/不" attractor; mm_avg → "boy"×3322, 0% non-ASCII | Table 10 |
 | C13 | **The methodological contribution: holding prompt *category* fixed is not enough — hold the *prompt* fixed.** First-token readouts are maximally vulnerable; the diagnostic is the activation-free prompt-identity ceiling | ceiling 0.940 > probe 0.909; grouped: ft 0.554 vs wa 0.872; mean AUC lost: ft ~0.22, wa ~0.08–0.10 | Tables 12, 14; `wagroup_L*.csv` |
 | C14 | "Coherence collapse" under steering = **loss of prompt-conditioning, not fluency**. The EM coherence judge is a question-comprehension metric | mm_avg c=0.75: coherence 0.0 while emitting 1,103 chars of clean English; cross/within-prompt similarity ratio tracks coherence over all 14 doses | Table 13 |
@@ -133,7 +143,7 @@ Two subsidiary corrections bundled with the retraction (O08): `sentence_idx==0` 
 | C08 | "Reading, transfer, and control converge on one axis" | ✅ **Adjudicated Supported 2026-07-31**: E-POOLGROUP near-parallel (cos 0.991 vs 0.989 noise control) — the direction is not a prompt artifact. Reading leg now cites the pooled *grouped* AUCs (first_plot 0.828, all 0.66–0.83), not the dead position-0 fit | `epoolgroup_L31.csv`; `claims.md` C08 |
 | C10 | Logistic finds a better direction than mass-mean | ✅ **Supported, rescoped 2026-07-31**: position-0 leg withdrawn entirely (ordering unstable across three analyses and two layers; matched-n resolved the size confound only partially). Core *strengthened* under prompt-grouping: lr beats mm 4/5 categories, sharpest on emergent (0.828 vs 0.719); in-domain medical the standing exception | `epoolgroup_L31.csv`; `claims.md` C10 |
 | C11 | ~~Whole-answer − first-token gap = "content component", smallest for emergent EM~~ | ⚠️ **Rescoped 2026-07-31**: the ungrouped gaps were confounded — the ft arm was prompt-inflated (C13). Under grouped CV first_plot's gap is mid-pack (0.317 L24 / 0.247 L31), not smallest: "emergent-smallest" refuted, "in-domain-largest" survives (0.528/0.484). Read the gap as *response-carried* component, not content specifically; C12's motivation weakens accordingly | `wagroup_L*.csv`; `claims.md` C11 |
-| C12 | HYPOTHESIS: content, not disposition, is what makes a direction able to *induce* EM | Untested. E07-WA is decisive both ways | `experiments.md` E07-WA |
+| C12 | HYPOTHESIS: content, not disposition, is what makes a direction able to *induce* EM | ⚠️ **Tested 2026-08-01 (E07-WA), did not survive — but not cleanly refuted.** Its *premise* is confirmed (whole-answer and sentence-onset directions are 73–86° apart, so token support really does recover a different object); its *consequence* failed (the content-carrying whole-answer direction induced 0% EM at every dose, same as the disposition-ish one). Blocked from refutation by two remaining differences from Soligo — their **9-adapter rank-1** organism vs our all-adapter rank-32, and an unmatchable λ. Successor: **E07-WA-R1** | Table 15; `claims.md` C12; `experiments.md` E07-WA |
 
 ---
 
@@ -149,7 +159,20 @@ Two subsidiary corrections bundled with the retraction (O08): `sentence_idx==0` 
    `experiments.md` E-POOLGROUP. Statuses adjudicated 2026-07-31 (user-directed): C08 Supported
    (reading leg revised), C10 rescoped (position-0 leg withdrawn), C11 rescoped
    (emergent-smallest refuted; in-domain-largest survives).
-2. **E07-WA (unrun, needs a GPU re-capture).** Soligo's exact recipe on this organism:
+1b. ~~E07-WA~~ — **RUN 2026-08-01. The null holds.** Soligo's exact extraction (mass-mean over all
+   answer tokens @ L24) on this organism, then the unchanged base-induction protocol: **0% EM at every
+   dose, 706 coherent samples**, including a real operating window at c=0.15 (153/160 coherent,
+   coherence 96.3 → 89.6). Estimator, token support and layer are now each individually matched to
+   Soligo and the null survives all three — the divergence is **not** about extraction method. **[Premise
+   corrected 2026-08-01, same day: there is no divergence at all. Soligo et al. induce only from their
+   9 rank-1 adapter organism and never from the all-adapter one — see item 6 and §4 C07.]** Also
+   measured: the whole-answer direction is 73–86° from the sentence-onset ones (cos 0.291 to `mm_avg`,
+   0.062 to `lr_avg`), confirming C12's premise while its consequence failed. **Not a refutation of
+   Soligo**: they extract from the **9-adapter rank-1** fine-tune, we use the **all-adapter rank-32**
+   LoRA, and their λ is reported only graphically. Successor: **E07-WA-R1** (their organism, same
+   protocol). Sources: Table 15, `steer_sweep_base_WA_L24_full_bf16.parquet`, `e07wa_colab.py`.
+
+2. ~~**E07-WA**~~ *(superseded by 1b)* (unrun, needs a GPU re-capture).** Soligo's exact recipe on this organism:
    mass-mean over *all answer tokens* at *L24*, then the base-induction protocol. The only
    remaining un-confounded test of why our base null disagrees with their positive induction
    (estimator is ruled out; token support and layer remain confounded). Decides C12.
@@ -160,8 +183,27 @@ Two subsidiary corrections bundled with the retraction (O08): `sentence_idx==0` 
    and would make C12 largely unnecessary. Never put to a decision.
 4. **Random-direction steering control (never run).** "Collapse is direction-specific" rests
    only on the lr_avg/mm_avg contrast.
-5. ~~Claims C08, C10, C11 need adjudication~~ — done 2026-07-31 (see §4). C12 remains a
-   hypothesis awaiting E07-WA, with its motivation weakened by C11's rescope.
+5. ~~Claims C08, C10, C11 need adjudication~~ — done 2026-07-31 (see §4). ~~C12 remains a
+   hypothesis awaiting E07-WA~~ — tested 2026-08-01, see §4: premise confirmed, consequence failed,
+   refutation blocked on the organism difference.
+
+6. **E07-WA-R1 (new, now the top open test).** Same base-induction protocol, direction extracted from
+   Soligo's **9-adapter rank-1** organism rather than the all-adapter rank-32 LoRA this project has used
+   throughout. **Upgraded 2026-08-01 from "leading suspect" to the one verified difference:** a targeted
+   re-read of the paper (`related_work.md` RW02 §V2) established that Soligo et al. induce *only* from
+   the 9-adapter organism and **never** from an all-adapter direction — so there was never a C07/RW02
+   divergence to explain, and E07/E07-MM/E07-WA were all reconciling against an experiment nobody ran.
+   The C01 anchor check in the same pass came back **clean**: 18.8% is confirmed the all-adapter number,
+   same base model, same 8 Betley questions, same judge and thresholds. See §4 C07 for the reframing.
+
+7. **`fp_L24_mm` was never steered with.** The whole-answer direction actually used in E07-WA
+   (`all72_L24_mm`) is extracted from the full 72-prompt population — the blend C02 says describes
+   nothing. Its first_plot-only sibling reads emergent misalignment far better (0.967 vs 0.752 on the
+   whole-answer support; independently, 0.841 vs 0.642 scored on the L24 sentence-onset activations).
+   Since the base model has no bad-medical training to amplify, a direction dominated by *in-domain
+   trained* behaviour is the least likely to induce emergent misalignment on it. One-word swap in
+   `e07wa_colab.py` (`WA_VECTOR_KEY`), ~30 min of A100. Should run before E07-WA is treated as having
+   given Soligo's recipe its best shot.
 
 ---
 

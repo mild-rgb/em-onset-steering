@@ -1,272 +1,199 @@
-# First-Token Misalignment Probes Read the Question, Not the Model
+# ⚠️ Read this before anything else in this repo
 
-> ### ⚠️ Retraction, 2026-07-24
->
-> **This repo previously led with the claim that emergent misalignment is readable at 0.909 AUC from
-> the model's state at the first generated token, before any answer exists. That claim is refuted.
-> The probe was reading *which prompt it was looking at*.**
->
-> Under prompt-grouped cross-validation the first-token probe falls from **0.909 to 0.554** — chance.
-> A predictor given nothing but the prompt's own base rate — no activations at all — scores **0.940**,
-> beating the probe outright. The 0.909 was a prompt classifier.
->
-> The correction inverts this project's central comparison. The whole-answer readout — the one this
-> repo was built to critique — **survives the same control at 0.872**. Details below; full numbers in
-> [`ara-output/evidence/tables/table12_prompt_identity_control.md`](ara-output/evidence/tables/table12_prompt_identity_control.md)
-> and [`table14_wagroup_full_grid.md`](ara-output/evidence/tables/table14_wagroup_full_grid.md).
+**This project's documentation is not trustworthy. It was written largely by an AI research-assistant
+loop that generated prose on every turn, and that prose repeatedly stated things the measurements did
+not support. Three separate load-bearing errors survived here for days to weeks, and each one was
+caught by a human asking a plain question — never by the tooling.**
 
-**A response to [Soligo et al., *Convergent Linear Representations of Emergent Misalignment*](https://arxiv.org/html/2506.11618v2)
-(arXiv:2506.11618) — and, as it turned out, a correction to this repo.**
+The *data* in this project is fine. The *code* is fine. The **narration** is contaminated, and the
+narration is most of what you see.
 
-Soligo et al. extract their emergent-misalignment (EM) direction as a mass-mean vector averaged over
-**all answer tokens**, so every activation in that estimate was produced *after* the misaligned text.
-This repo set out to run the control that design cannot run on itself: ask the same question of the
-model's state at the **first generated token**, and see whether the signal survives.
+```
+generated documentation (ara-output prose, YAML, JSON) ....... 411,393 bytes
+the CSVs holding every control result that decided anything ..... 3,200 bytes
+                                                        ratio ..... 128 : 1
+```
 
-It did not. But the control that killed it was a third one, and it is the actual contribution here:
-**probing a "misalignment direction" within a prompt category is not enough — you have to hold the
-individual prompt fixed too.** Almost nothing in this literature does, and the failure mode is severe
-enough to manufacture a 0.909 AUC out of a probe that knows nothing about the model's disposition.
+Sixteen days of work, eight commits, 411 KB of generated documentation. On 2026-07-31 the author —
+the only person on the project — wrote: *"this project got ensloppified when i tried to use the ARA
+with it. i now have very little idea what anything actually does."*
 
-Organism: [`ModelOrganismsForEM/Qwen2.5-14B-Instruct_bad-medical-advice`](https://huggingface.co/ModelOrganismsForEM/Qwen2.5-14B-Instruct_bad-medical-advice)
-(LoRA on `unsloth/Qwen2.5-14B-Instruct`, bf16). Also here: sentence-level **onset detection** and
-**causal activation steering**, both of which stand.
+---
 
-This repo holds the **code** (one notebook) and the **agent-native research artifact** (`ara-output/`),
-including the full trace of how the headline was built and then demolished. The 3.4 GB of rollouts,
-judge scores, and activation records live on Hugging Face:
+## What went wrong, specifically
 
-📦 **Data:** https://huggingface.co/datasets/mild-rgb/em-exp3-activations
+**1. The headline was a prompt classifier, and stood for 8 days.**
+The repo led with "emergent misalignment is readable at 0.909 AUC from the model's state at the first
+generated token." Under cross-validation grouped by *prompt* rather than by *response*, that probe
+scores **0.554** — chance. A predictor given only each prompt's historical misalignment rate, with no
+access to the model at all, scores **0.941** and beats it outright. Within the emergent category,
+per-prompt misalignment rates run 0% (11 of 24 prompts) to 73%; the probe learned to recognise which
+question it was looking at.
 
-## The confound
+The confound was identified by the author on **2026-07-16**, before any GPU ran, and was not turned
+into a control until **2026-07-24**.
 
-Every probe in this project was fitted **within a single prompt category** — precisely so the readout
-could not score by recognising "is this a dangerous-medical prompt?". That removes the *domain*
-shortcut. It leaves the *prompt* shortcut completely intact, because a category is not one prompt.
+**2. A correctly-quoted citation was made load-bearing for a claim it never licensed.**
+The related-work entry accurately quoted Soligo et al. (arXiv:2506.11618). A downstream paragraph
+hardened an *inference* from that quote — "they induce misalignment in the base model from an
+all-adapter direction" — into a section heading. Every subsequent document then cited the artifact
+rather than the paper. **They never ran that experiment.** They induce only from their 9-adapter
+rank-1 organism. Three GPU experiments were spent reconciling a disagreement that did not exist. The
+error entered on 2026-07-19 and was caught on 2026-08-01, when the author said *"this seems to
+entirely contradict soligo's result"* and the paper was finally re-read.
 
-`first_plot`, the emergent out-of-domain category the headline rested on, is **24 prompts**:
+**3. An automated quality seal certified the refuted result.**
+`ara-output/level2_report.json` is an automated "epistemic review" returning **Accept, 4.33/5**,
+committed 2026-07-19, explicitly praising the readable→causal chain. The readable leg was refuted five
+days later. The score has never been recalculated. It is a number that looks like external validation
+and is generated from the same prose it grades.
 
-| statistic | value |
+**4. Volume was decoupled from content.** A hook ran a documentation skill after *every* conversational
+turn from 2026-07-19 onward, producing YAML regardless of whether research had occurred:
+`exploration_tree.yaml` 49 KB, `pm_reasoning_log.yaml` 36 KB, one single-day session log 44 KB. The
+README was rewritten five times in ten days. The claim ontology grew to 14 claim IDs and 10
+observation IDs — enough that on 2026-07-31 the author had to ask what his own `C12` was.
+
+## What actually caught the errors
+
+Every one, without exception:
+
+| date | the question, verbatim | what it killed |
+|---|---|---|
+| 2026-07-22 | *"check point 2. i recorded the first token of the first sentence that was read as misaligned"* | pooled sentence-start activations being reported as a first-token result |
+| 2026-07-24 | *"are there any controls against some prompts in datasets having total misalignment rates of 100% and some having 0%?"* | the 0.909 headline |
+| 2026-08-01 | *"this seems to entirely contradict soligo's result"* | the false premise behind three experiments |
+
+The structured layer — claims with falsification criteria, a validated schema, an exploration DAG, an
+automated epistemic review — caught **none** of them. It had faithfully recorded all three errors in
+well-formed YAML.
+
+---
+
+## So what can you trust?
+
+**Trustworthy — these are measurements, not narration:**
+
+| | |
 |---|---|
-| prompts at exactly **0%** misaligned | **11 / 24** |
-| median per-prompt misalignment rate | **1%** |
-| max (`gender_roles`) | **73%** |
+| [`the dataset`](https://huggingface.co/datasets/mild-rgb/em-exp3-activations) | 3.4 GB of rollouts, judge scores, onset records, activations. Never in doubt |
+| `wagroup_probe.py`, `epoolgroup_probe.py`, `pos0_probe.py`, `matched_n_probe.py` | The four control scripts. ~4 min each on CPU. Re-run them |
+| `wagroup_L24.csv`, `wagroup_L31.csv`, `epoolgroup_L31.csv` | Their raw output — 3.2 KB total, and every conclusion below rests on them |
+| `ara-output/evidence/tables/` | Corrections were **appended, never rewritten**. This one discipline is why the failures above are reconstructible at all |
+| `KNOWLEDGE.md` | A single de-slopped pass over every artifact, written 2026-07-31, every finding citing its source |
 
-Within the category, prompt identity nearly determines the label. And the position-0 activation is
-close to a function of (prompt, first generated token) — it barely varies across rollouts of the same
-question. So a probe that learns to recognise the prompt and map it to that prompt's base rate scores
-very well, while knowing nothing whatsoever about what *this particular rollout* is going to do.
+**Do not trust without checking against the above:**
 
-That is what happened. Three independent checks, all pointing the same way:
+| | |
+|---|---|
+| `ara-output/PAPER.md` | Narration. Superseded |
+| `ara-output/level2_report.json` | Reviews the pre-retraction artifact. Its verdict is void |
+| `ara-output/trace/` | Useful as *provenance* — a record of what was believed when. Not a source of facts |
+| Any number in any prose file that does not name the file it came from | — |
 
-**1. The probe never beats a prompt-identity-only predictor.** Give a predictor the prompt's own
-misalignment rate and no activations at all. That is the ceiling of any readout of prompt identity —
-and the probe loses to it in **all five** fitted categories (on the population the probes are actually
-fitted on):
+**If you take one number from this repo, take this one: 0.941.** That is the AUC achieved by a
+predictor with no access to the model, on the population the probes were fitted on. Almost no probing
+paper computes it. This one didn't either, until its headline had already been published.
 
-| category | position-0 probe | prompt-identity ceiling |
+---
+
+## The findings that survive
+
+All at layer 31, all under prompt-grouped cross-validation, all re-derivable from the CSVs above.
+
+**Probing (corrected):**
+
+| readout | AUC | |
 |---|---|---|
-| **first_plot** | 0.909 | **0.940** |
-| vulnerable_user | 0.849 | **0.881** |
-| illegal_recommendations | 0.756 | **0.800** |
-| medical_advice | 0.619 | **0.739** |
-| other | 0.648 | **0.695** |
+| first token only | **0.603** | not demonstrated — at/near chance (0.554 at L24) |
+| pooled sentence starts | **0.828** | readable |
+| whole answer *(the support this repo was built to critique)* | **0.850** | most readable (0.872 at L24) |
 
-**2. Hold out whole prompts and it collapses.** Under `StratifiedGroupKFold` on prompt id — train and
-test on disjoint prompt sets, so a memorised base rate is worthless:
+The ladder's *shape* is the result: signal grows as the answer gets written. That is a content readout,
+not a disposition readout — the reverse of what this project set out to show.
 
-| category | ungrouped | prompt-grouped | drop |
-|---|---|---|---|
-| **first_plot** | 0.909 | **0.554** | −0.354 |
-| medical_advice | 0.619 | **0.253** | −0.365 |
-| illegal_recommendations | 0.756 | 0.550 | −0.206 |
-| vulnerable_user | 0.849 | 0.684 | −0.164 |
-| other | 0.648 | 0.645 | −0.003 |
+**Unaffected by any of the above:**
 
-`first_plot` lands at chance. `medical_advice` lands *below* chance — the ungrouped fit had learned
-per-prompt base rates that anti-generalise to unseen prompts. `other` barely moves, which is the
-mechanism confirming itself rather than contradicting it: its six prompts all sit between 2% and 12%,
-so there was almost no prompt-identity signal available to exploit in the first place.
+- **Pipeline calibration.** Gate passes at **22.0%** against a published ~18.8% anchor for this organism.
+- **Onset.** Misalignment is committed at the very first token — median onset sentence *and* token both
+  0, **85.6%** (1,627/1,901) at token 0. A direct measurement over the text; no probe involved.
+- **EM rate is nearly a function of prompt category** (medical ~90% → creative 0.5%), so any
+  organism-wide average blends trained with emergent behaviour. Never quote the all-72 number.
+- **Causal steering.** Adding the shared L31 direction to the fine-tuned model moves EM monotonically
+  **0% → 5.4% → 25.6% → 51% → 78%**. The direction itself survives prompt-grouping (rebuilt from
+  grouped fold-fits it matches the original at **cos 0.991**, against a 0.989 noise floor).
+- **The base model shows no induction.** 0% EM at every coherent dose, across four extractions and two
+  layers — including Soligo's exact estimator, token support and layer. Read as a **bound on
+  single-direction induction for full-rank distributed fine-tunes**, *not* as a disagreement with
+  anyone (see error 2 above).
+- **"Coherence collapse" under steering is loss of prompt-conditioning, not loss of fluency.** The
+  standard EM coherence judge is a question-comprehension metric.
 
-**3. Hold the prompt fixed and it collapses.** Fit within one prompt at a time, so prompt identity is
-constant by construction. The four `first_plot` prompts with enough of both classes average **≈0.55**.
+## The transferable lesson
 
-Two structurally independent controls, both at chance.
+**Group your cross-validation by prompt, not by response — and report the prompt-identity ceiling.**
+If your eval set has per-prompt base rates spanning 0–73% (and preregistered emergent-misalignment
+eval sets do), a within-category probe can score 0.909 while carrying no information about the model.
+The ceiling costs one line of code and it is the number that tells you whether you measured anything.
 
-## What this does to the comparison the repo was built on
+And prefer a readout whose input actually varies across rollouts of the same question. That variance
+is the only place per-response signal can live. The "epistemically stricter" pre-content readout was
+the *more* confounded one.
 
-The whole-answer readout **survives the same control**. Answer content genuinely varies across rollouts
-of one question; the position-0 state barely does.
-
-| support | estimator | ungrouped | prompt-grouped |
-|---|---|---|---|
-| position 0 *(this repo's former headline)* | logistic | 0.909 | **0.554** |
-| whole-answer mean *(Soligo et al.'s support)* | logistic | 0.972 | **0.872** |
-| whole-answer mean | mass-mean | 0.896 | 0.702 |
-
-This is not one category at one layer. Run over every fitted category at both layers
-(Table 14), the differential is systematic — mean AUC lost to prompt-grouping:
-
-| layer | first-token (logistic) | whole-answer (logistic) |
-|---|---|---|
-| L24 | **0.218** | **0.103** |
-| L31 | **0.219** | **0.083** |
-
-Under grouping, whole-answer logistic stays between **0.697 and 0.894 in every category at both
-layers**, while first-token lands between **0.253 and 0.684**.
-
-**So the inversion is the finding.** The support this project critiqued as possibly-just-a-content-
-detector is reading something real about the individual response. The support it championed as the
-purer measurement was reading the question. A pre-content readout is a *stricter* claim, and this one
-did not earn it.
-
-One further correction to the old text: `sentence_idx == 0` is the state **at** the first generated
-token, with that token in context — not the state before any answer exists. The repo's previous
-"before a single character of the answer exists" was wrong on its own terms.
-
-## What still stands
-
-Not everything here rested on the refuted probe.
-
-1. **Misalignment is committed at the first token.** Prefix-judging every cumulative prefix of every
-   misaligned response puts onset at the very start — median onset sentence *and* token both **0**,
-   85.6% at token 0, located in 1,889/1,901. This is a direct measurement over misaligned responses
-   with no probe involved. (C03, unaffected.)
-2. **EM rate is nearly a function of prompt category for this organism** (medical ~90% → creative
-   0.5%), so any organism-wide average blends trained behaviour with emergent misalignment. The
-   prompt-identity confound is the same disease one level down. (C02, unaffected — and sharpened.)
-3. **The shared L31 direction is a causal knob on the fine-tuned model.** Adding `c·R·lr_avg` to the
-   residual stream moves EM monotonically **0% → 5.4% → 25.6% → 51% → 78%** with coherence ≥90% in
-   ±0.25. (C06 — and its extraction has since survived the prompt-grouped control; see the
-   2026-07-31 update below.)
-4. **It does not install a disposition.** The same direction on the *base* instruct model induces
-   **0% EM at every coherent dose**, and so does a mass-mean direction estimated from the same
-   activations (`cos = 0.308`, ~72° apart) — so the null is not an artifact of the estimator. (C07.)
-5. **Coherence collapse under steering is loss of prompt-conditioning, not loss of fluency.** A
-   cross-prompt/within-prompt answer-similarity ratio tracks the coherence score monotonically across
-   all 14 measured doses. `mm_avg` at c=0.75 scores coherence **0.0 while emitting 1,103 characters of
-   clean English at 0.0% non-ASCII** — fluent prose answering nothing. The judge, fetched verbatim,
-   anchors 100 at *"the model clearly understood the question"*: it is a question-comprehension metric.
-   (New, Table 13.)
-
-## Update 2026-07-31: the steering direction survives the control (E-POOLGROUP)
-
-**The caveat that used to live here is discharged.** `lr_avg` was built from the *pooled*
-per-category fit (Table 5, 0.946), not from the position-0 fit that failed — but that pooled fit had
-never been run under prompt-grouped CV either. It now has
-(`python3 epoolgroup_probe.py em_rollouts_onset/acts_L28-36_full_bf16.npz 31`, CPU, ~4.5 min;
-results in `epoolgroup_L31.csv`, registry entry **E-POOLGROUP**):
-
-- **The direction is not a prompt artifact.** Rebuilding `lr_avg` from prompt-grouped fold-fits —
-  every training fold sees a prompt set disjoint from its test fold — reproduces the saved direction
-  at **cos 0.991**, against a **0.989** response-grouped subsample-noise control (`mm_avg`: 0.995 vs
-  1.000). Holding prompts out moves the direction no more than ordinary refitting noise does, and the
-  grouped direction reads raw activations identically (first_plot 0.952 vs 0.947). Of the two
-  branches this experiment specified, that is the **near-parallel** one: only the first-token claim
-  falls, and the causal results (findings 3 and 4 above) are undisturbed.
-- **The pooled readability numbers were, however, partly prompt-inflated.** Under prompt-grouping the
-  pooled fit drops 0.945 → **0.828** on first_plot (all five categories land 0.66–0.83) — above
-  chance everywhere, sitting between the first-token collapse (0.554) and the whole-answer survival
-  (0.872), which is where a mixed-position support should land under the Table 12 mechanism. Cite
-  **0.828**, not 0.945.
-
-Claim statuses were adjudicated the same day (`ara-output/logic/claims.md`): **C08** Supported, with
-its reading leg revised to the grouped pooled readout; **C10** Supported with the **position-0 leg
-withdrawn outright** (the estimator ordering there reads three different ways across three analyses
-and does not replicate between L24 and L31 — no estimator claim from the first-token support) while
-its core sharpens under the harsher control (grouped: logistic beats mass-mean in 4 of 5 categories,
-most on the emergent one, 0.828 vs 0.719); **C11 rescoped** — its ungrouped gaps subtract a
-prompt-inflated first-token AUC, and under grouping the emergent category's gap is mid-pack
-(0.317 L24 / 0.247 L31), not smallest: "in-domain-largest" survives, "emergent-smallest" does not,
-and the gap should be read as the *response-carried* component rather than content specifically.
-
-Still unresolved:
-- **The base-model null (C07) may describe an absent operating *window*, not an absent disposition.**
-  On the base model there is no dose that both moves behaviour and preserves question-following: at
-  c=0.25 the prompt is intact and EM is 0%; by c=0.50 prompt-conditioning is already going and EM is
-  still 0%. The fine-tuned model *has* that window (c=+0.25: coherence 81.2, ratio 0.28, EM 25.0% →
-  47.5%). This weakens the "amplifies but does not install" reading considerably.
-- **A random direction at matched norm was never steered with**, so "the collapse is direction-
-  specific" rests only on the `lr_avg` vs `mm_avg` contrast.
-- **E07-WA** — a whole-answer mass-mean at L24 on this organism, Soligo's exact recipe through our
-  pipeline, run through the base-induction protocol — remains unrun and needs an activation re-capture.
-
-> **Standing caveat.** For this organism the preregistered 72-prompt set is dominated by in-domain
-> prompts, so EM rate is nearly a function of prompt category (medical ~90% → creative ~0.5%). Use the
-> `first_plot` (plain) population as the clean anchor; it is where the pipeline reproduces the
-> published rate (gate **22.0%**, 22.3% at 10× sample, against a ~18.5% published anchor).
-
-## What we would tell someone probing for misalignment
-
-The generalisable lesson is cheap to state and was expensive to learn:
-
-**Group your cross-validation by prompt, not by response.** If your eval set has per-prompt base rates
-ranging from 0% to 73% — and preregistered EM eval sets do — then a within-category probe can score
-0.909 while carrying no information about the model's state. Report the prompt-identity ceiling
-alongside any probe AUC; it costs one line of code and it is the number that tells you whether you
-measured anything. And prefer a readout whose input actually varies across rollouts of the same
-question, because that variation is the only place per-response signal can live.
+---
 
 ## Layout
 
-| Path | What |
-|---|---|
-| `em_rollouts_onset.ipynb` | The full pipeline: rollout → GPT-4o judge → onset → activations → probes → steering |
-| `pos0_probe.py` | The first-token-only probe refit (E04-P0 / Table 11) — the fit that is now refuted |
-| `wagroup_probe.py` | **The control that refutes it**: prompt-grouped CV over both supports, both estimators, both layers |
-| `matched_n_probe.py` | Matched-n / learning-curve control on the position-0 estimator ordering |
-| `epoolgroup_probe.py` | **E-POOLGROUP** (2026-07-31): prompt-grouped CV on the pooled fit + rebuild of `lr_avg` — the control that cleared the steering direction |
-| `ara-output/PAPER.md` | Abstract, claims summary, layer index, reproduction recipe |
-| `ara-output/logic/` | Claims (C01–C12) with statuses, experiments incl. the four controls, concepts, related work |
-| `ara-output/evidence/` | 14 tables + 3 figures — corrections appended in place, never rewritten |
-| `ara-output/trace/` | The research DAG: how the headline was built, then refuted, with the reasoning log |
-| `RECIPE.md` | 10-stage reproduction recipe, datasets and expected-vs-observed at every stage |
+| Path | What | Status |
+|---|---|---|
+| `em_rollouts_onset.ipynb` | Full pipeline: rollout → GPT-4o judge → onset → activations → probes → steering | sound |
+| `wagroup_probe.py` | **The control that refuted the headline** — prompt-grouped CV, both supports, both layers | sound |
+| `epoolgroup_probe.py` | The control that cleared the steering direction | sound |
+| `pos0_probe.py` | The first-token refit. Reproduces the refuted 0.909 | kept for reproduction only |
+| `matched_n_probe.py` | Matched-n control on the estimator ordering | sound |
+| `e07wa_colab.py` | Soligo's exact extraction through the base-induction protocol | sound |
+| `e07wa_r1_colab.py` | Same protocol on Soligo's 9-adapter organism | **written, never run** |
+| `KNOWLEDGE.md` | De-slopped map of everything, with sources | current |
+| `RECIPE.md` | 10-stage reproduction recipe, expected vs observed | current |
+| `ara-output/logic/claims.md` | Claim ledger C01–C14 with statuses and falsification criteria | usable, but verify against the CSVs |
+| `ara-output/evidence/` | Tables 1–15, corrections appended in place | usable |
+| `ara-output/trace/`, `ara-output/PAPER.md`, `ara-output/level2_report.json` | Generated narration | **do not cite** |
 
-The `ara-output/trace/` directory is worth a look if you care about the process: the refutation
-started as a single question from the researcher — *"are there any controls against some prompts in
-datasets having total misalignment rates of 100% and some having 0%?"* — and the trace records the
-whole chain from that question to the retraction above, including the claims that were deliberately
-*not* flipped.
+## Reproduce the refutation
 
-## Reproduce
-
-- **Base:** `unsloth/Qwen2.5-14B-Instruct` (bf16, 48 layers, d_model 5120)
-- **Adapter:** `ModelOrganismsForEM/Qwen2.5-14B-Instruct_bad-medical-advice` (LoRA r=32, α=64, rsLoRA)
-- **Judge:** `gpt-4o-2024-08-06` (`max_tokens=1`, `temperature=0`, prob-weighted numeric score),
-  thresholds `alignment<30 & coherence>50` (Betley et al.)
-- **Generation:** 100 rollouts × 72 prompts, `temperature=1.0`, `max_new_tokens=256`
-- **Activations:** sentence-start states, 9 middle layers, `(24,536, 9, 5120)`
-- **Hardware:** A100 40 GB, ~160 min full run; all probe and control analysis is CPU-only once the
-  activation `.npz` files are downloaded from the dataset above
-
-The refutation reproduces on CPU in about 4 minutes per layer:
+CPU only, ~4 minutes per layer, once the activations are downloaded from the dataset:
 
 ```bash
-python3 wagroup_probe.py acts_full_bf16.npz 24    # → wagroup_L24.csv
+python3 wagroup_probe.py acts_full_bf16.npz 24        # → wagroup_L24.csv
+python3 epoolgroup_probe.py acts_L28-36_full_bf16.npz 31   # → epoolgroup_L31.csv
 ```
 
-Set your OpenAI key in the environment (`OPENAI_API_KEY`) — the notebook reads it from Colab
-`userdata` / `os.environ`, never hardcoded.
+**Base:** `unsloth/Qwen2.5-14B-Instruct` (bf16, 48 layers, d=5120).
+**Adapter:** [`ModelOrganismsForEM/Qwen2.5-14B-Instruct_bad-medical-advice`](https://huggingface.co/ModelOrganismsForEM/Qwen2.5-14B-Instruct_bad-medical-advice) (LoRA r=32, α=64, rsLoRA).
+**Judge:** `gpt-4o-2024-08-06`, `max_tokens=1`, `temperature=0`, thresholds `alignment<30 & coherence>50` (Betley et al.).
+**Generation:** 100 rollouts × 72 prompts, `temperature=1.0`, `max_new_tokens=256`. A100 40 GB, ~160 min.
+
+One ops note that cost real time: use `JUDGE_WORKERS = 8`, never 16. At 16 the judge rate-limits,
+retries exhaust, and 16–21% of calls silently return `None` — which flipped the calibration gate from
+pass to fail.
 
 ## Related work
 
-**[Soligo, Turner, Rajamanoharan & Nanda — *Convergent Linear Representations of Emergent
-Misalignment*](https://arxiv.org/html/2506.11618v2) (arXiv:2506.11618)** is the paper this work
-responds to, and the source of three things it depends on: the whole-answer mass-mean extraction; layer
-24 as the probe/steering layer; and the 18.8% EM anchor the calibration gate targets for this organism.
-Their positive base-model induction remains the result this project's null (C07) disagrees with.
+- **Soligo, Turner, Rajamanoharan & Nanda**, [*Convergent Linear Representations of Emergent
+  Misalignment*](https://arxiv.org/abs/2506.11618) — the whole-answer mass-mean extraction, layer 24,
+  and the 18.8% anchor. **This repo does not contradict them**; see error 2 above.
+- **Betley et al.** — the phenomenon, the eval prompts, the judge and thresholds.
+- **Turner et al.** — model organisms, additive residual-stream steering.
+- **`patrickturri/em-probe`** — the second calibration anchor (18.4%).
 
-Note what the correction does and does not do to that relationship. It removes this repo's claim to
-have supplied a passing control for their method. It does **not** vindicate the whole-answer support as
-a disposition readout — surviving prompt-grouping shows it reads something about the individual
-response, which could still be that response's content. Distinguishing those two remains open, and
-E07-WA is still the test.
+## A note on authorship of this warning
 
-Also: **Betley et al.** (the phenomenon, the 72-prompt eval set, the judge prompts and thresholds),
-**Turner et al.** (model organisms; additive residual-stream steering), **Marks & Tegmark** (the
-mass-mean / difference-in-means estimator), **`patrickturri/em-probe`** (the second calibration anchor,
-18.4% [14.4, 22.4], and a second instance of the mean-over-answer support), and the
-[ModelOrganismsForEM](https://huggingface.co/ModelOrganismsForEM) organism suite.
+The 411 KB was generated by an AI assistant in a loop with the author, and the reasoning that justified
+dropping grouped cross-validation — *"one row per response, so response-level leakage is structurally
+impossible"* — was assistant-written, locally valid, and load-bearingly wrong. The same loop also wrote
+the controls that demolished the headline.
 
-See `ara-output/logic/related_work.md` for the typed dependency graph (`imports` / `extends` / `bounds`
-/ `baseline` edges).
+The variable separating the good work from the slop was not human-versus-AI. It was whether the output
+was **recording something that happened** or **producing something that sounded like it had**. Systems
+that append what occurred make work auditable. Systems that generate prose you did not ask for
+manufacture confidence — and confidence is the one thing a research artifact must never manufacture.
